@@ -1,8 +1,8 @@
 module Asynchronic
   class Worker
 
-    def initialize(queue)
-      @queue = queue
+    def initialize(queue=nil)
+      @queue = queue || Asynchronic.default_queue
     end
 
     def start
@@ -15,6 +15,10 @@ module Asynchronic
 
     def stop
       Ost[@queue].stop
+    end
+
+    def self.start(queue=nil)
+      new(queue).tap(&:start)
     end
   
   end

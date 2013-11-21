@@ -7,20 +7,19 @@ module Asynchronic
 
     attr_reader :pipeline
     attr_reader :input
+    attr_reader :context
     attr_reader :children
   
-    def initialize(pipeline, input)
+    def initialize(pipeline, input, context={})
       @pipeline = pipeline
       @input = input
+      @context = context
       @children = pipeline.steps.map { Child.new :pending }
     end
 
-    def context
-      @context ||= {}
-    end
-
-    def enqueue
-      Ost[pipeline.queue || Asynchronic.default_queue].push id
+    def enqueue(queue=nil)
+      q = queue || pipeline.queue || Asynchronic.default_queue
+      Ost[q.is_a?(Proc) ? q.call(context) : q].push id
     end
 
     def run
@@ -33,13 +32,13 @@ module Asynchronic
         children[i].status = :finalized
         save
 
-        enqueue if next_child?(i)
+        enqueue(pipeline.steps[next_child(i)].options[:queue]) if next_child?(i)
       end
     end
 
-    def self.enqueue(pipeline, input)
-      process = Process.create pipeline, input
-      process.enqueue
+    def self.enqueue(pipeline, input, context={})
+      process = Process.create pipeline, input, context
+      process.enqueue(pipeline.steps.first.options[:queue])
       process.id
     end
 
