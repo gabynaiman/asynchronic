@@ -15,8 +15,8 @@ module Asynchronic
       @steps ||= []
     end
 
-    def run(input=nil, context={})
-      Process.enqueue self, input, context
+    def run(context={})
+      Process.enqueue self, context
     end
 
   end

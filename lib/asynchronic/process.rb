@@ -6,13 +6,11 @@ module Asynchronic
     Child = Struct.new :status, :output
 
     attr_reader :pipeline
-    attr_reader :input
     attr_reader :context
     attr_reader :children
   
-    def initialize(pipeline, input, context={})
+    def initialize(pipeline, context={})
       @pipeline = pipeline
-      @input = input
       @context = context
       @children = pipeline.steps.map { Child.new :pending }
     end
@@ -27,8 +25,8 @@ module Asynchronic
         children[i].status = :running
         save
 
-        current_input = previous_child?(i) ? children[previous_child(i)].output : input
-        children[i].output = pipeline.steps[i].block.call(current_input, context)
+        current_input = previous_child?(i) ? children[previous_child(i)].output : nil
+        children[i].output = pipeline.steps[i].block.call(context, current_input)
         children[i].status = :finalized
         save
 
@@ -36,8 +34,8 @@ module Asynchronic
       end
     end
 
-    def self.enqueue(pipeline, input, context={})
-      process = Process.create pipeline, input, context
+    def self.enqueue(pipeline, context={})
+      process = Process.create pipeline, context
       process.enqueue(pipeline.steps.first.options[:queue])
       process.id
     end
