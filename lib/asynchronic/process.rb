@@ -22,15 +22,17 @@ module Asynchronic
 
     def run
       current_child.tap do |i|
-        children[i].status = :running
-        save
+        log "Running: #{id} (child: #{i})" do
+          children[i].status = :running
+          save
 
-        current_input = previous_child?(i) ? children[previous_child(i)].output : nil
-        children[i].output = pipeline.steps[i].block.call(context, current_input)
-        children[i].status = :finalized
-        save
+          current_input = previous_child?(i) ? children[previous_child(i)].output : nil
+          children[i].output = pipeline.steps[i].block.call(context, current_input)
+          children[i].status = :finalized
+          save
 
-        enqueue(pipeline.steps[next_child(i)].options[:queue]) if next_child?(i)
+          enqueue(pipeline.steps[next_child(i)].options[:queue]) if next_child?(i)
+        end
       end
     end
 
@@ -60,6 +62,14 @@ module Asynchronic
 
     def next_child?(index=current_step)
       next_child(index) < children.count
+    end
+
+    def log(message)
+      start = Time.now
+      Asynchronic.logger.info "#{message} - Start"
+      result = yield
+      Asynchronic.logger.info "#{message} - End (Time: #{Time.now - start})"
+      result
     end
 
   end

@@ -14,4 +14,21 @@ module Asynchronic
     @default_queue = name
   end
 
+  def self.logger
+    @logger ||= Logger.new($stdout)
+  end
+
+  def self.logger=(logger)
+    @logger = logger
+  end
+
+  def self.connect_redis(options)
+    Ost.connect options
+    @redis = Redis.new options
+  end
+
+  def self.redis
+    @redis ||= Redis.current
+  end
+
 end

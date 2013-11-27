@@ -42,7 +42,7 @@ module Asynchronic
       end
 
       def namespace
-        @namespace ||= Nest.new self.name
+        @namespace ||= Nest.new self.name, Asynchronic.redis
       end
 
     end
