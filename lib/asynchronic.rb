@@ -41,4 +41,8 @@ module Asynchronic
     @archiving_path = path
   end
 
+  def self.archiving_file(name)
+    File.join archiving_path, "#{name}.bin"
+  end
+
 end

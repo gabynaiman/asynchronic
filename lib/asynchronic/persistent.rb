@@ -14,21 +14,23 @@ module Asynchronic
       
       def save
         @id ||= SecureRandom.uuid
-        namespace[id].set Marshal.dump(self)
+        nest.set Marshal.dump(self)
       end
 
       def delete
-        namespace[id].del
+        return unless id
+        nest.del
       end
 
       def archive
+        return unless id
         FileUtils.mkpath(Asynchronic.archiving_path) unless Dir.exists?(Asynchronic.archiving_path)
-        File.write File.join(Asynchronic.archiving_path, "#{id}.bin"), Base64.encode64(Marshal.dump(self))
+        File.write Asynchronic.archiving_file(id), Base64.encode64(Marshal.dump(self))
         delete
       end
 
-      def namespace
-        self.class.namespace
+      def nest
+        self.class.nest[id]
       end
 
     end
@@ -39,22 +41,18 @@ module Asynchronic
         new(*args, &block).tap(&:save)
       end
 
-      def delete(id)
-        namespace[id].del
-      end
-
       def find(id)
-        if namespace[id].get
-          Marshal.load namespace[id].get
-        elsif File.exists?(File.join(Asynchronic.archiving_path, "#{id}.bin"))
-          Marshal.load(Base64.decode64(File.read(File.join(Asynchronic.archiving_path, "#{id}.bin"))))
+        if nest[id].get
+          Marshal.load nest[id].get
+        elsif File.exists?(Asynchronic.archiving_file(id))
+          Marshal.load(Base64.decode64(File.read(Asynchronic.archiving_file(id))))
         else
           nil
         end
       end
 
-      def namespace
-        @namespace ||= Nest.new self.name, Asynchronic.redis
+      def nest
+        @nest ||= Nest.new self.name, Asynchronic.redis
       end
 
     end

@@ -25,4 +25,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'minitest', '~> 4.7'
   spec.add_development_dependency 'turn', '~> 0.9'
   spec.add_development_dependency 'simplecov'
+  spec.add_development_dependency 'mock_redis', '~> 0.10'
 end
