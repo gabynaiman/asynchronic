@@ -31,7 +31,11 @@ module Asynchronic
           children[i].status = :finalized
           save
 
-          enqueue(pipeline.steps[next_child(i)].options[:queue]) if next_child?(i)
+          if next_child?(i)
+            enqueue(pipeline.steps[next_child(i)].options[:queue])
+          else
+            archive
+          end
         end
       end
     end

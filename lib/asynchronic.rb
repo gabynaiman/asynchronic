@@ -1,6 +1,8 @@
 require 'ost'
 require 'securerandom'
+require 'base64'
 require 'logger'
+require 'fileutils'
 
 Dir.glob(File.expand_path('asynchronic/*.rb', File.dirname(__FILE__))).sort.each { |f| require f }
 
@@ -29,6 +31,14 @@ module Asynchronic
 
   def self.redis
     @redis ||= Redis.current
+  end
+
+  def self.archiving_path
+    @archiving_path ||= File.join(Dir.home, '.asynchronic', 'data')
+  end
+  
+  def self.archiving_path=(path)
+    @archiving_path = path
   end
 
 end

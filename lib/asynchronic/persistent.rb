@@ -21,6 +21,12 @@ module Asynchronic
         namespace[id].del
       end
 
+      def archive
+        FileUtils.mkpath(Asynchronic.archiving_path) unless Dir.exists?(Asynchronic.archiving_path)
+        File.write File.join(Asynchronic.archiving_path, "#{id}.bin"), Base64.encode64(Marshal.dump(self))
+        delete
+      end
+
       def namespace
         self.class.namespace
       end
@@ -38,7 +44,13 @@ module Asynchronic
       end
 
       def find(id)
-        Marshal.load namespace[id].get
+        if namespace[id].get
+          Marshal.load namespace[id].get
+        elsif File.exists?(File.join(Asynchronic.archiving_path, "#{id}.bin"))
+          Marshal.load(Base64.decode64(File.read(File.join(Asynchronic.archiving_path, "#{id}.bin"))))
+        else
+          nil
+        end
       end
 
       def namespace
