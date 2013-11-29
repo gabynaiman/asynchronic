@@ -89,7 +89,7 @@ Or install it yourself as:
 
     Job.run dynamic_queue: :queue2
 
-    threads = [:queue1, :queue2].map do |queue|
+    [:queue1, :queue2].map do |queue|
       Thread.new do
         Asynchronic::Worker.start queue
       end
