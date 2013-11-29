@@ -9,7 +9,7 @@ Turn.config do |c|
 end
 
 logger = Logger.new($stdout)
-logger.level = Logger::DEBUG
+logger.level = Logger::ERROR
 Asynchronic.logger = logger
 
 Asynchronic.connect_redis host: 'localhost', port: 6379
