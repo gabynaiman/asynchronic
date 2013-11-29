@@ -24,32 +24,74 @@ Or install it yourself as:
 
 ## Usage
 
-    class SingleStepJob
+### Basic usage
+
+    class Job
       extend Asynchronic::Pipeline
+      
       step :step_name do
-        Registry.add :single_step_job
+        ...
       end
     end
 
-    class TwoStepsWithSpecificQueueJob
+    Job.run
+
+    Asynchronic::Worker.start
+
+### Enque job in specific queue
+
+    class Job
       extend Asynchronic::Pipeline
-      queue :specific_queue
+      
+      queue :queue_name
+      
+      step :step_name do
+        ...
+      end
+    end
+
+    Job.run
+
+    Asynchronic::Worker.start :queue_name
+
+### Pipeline with shared context
+
+    class Job
+      extend Asynchronic::Pipeline
+
       step :first do |ctx|
-        ctx[:value2] = ctx[:value1] / 2
-        Registry.add ctx[:value1] + 1
+        ctx[:c] = ctx[:a] + ctx[:b]
+        100
       end
+
       step :second do |ctx, input|
-        Registry.add input * ctx[:value2]
+        input * ctx[:c] # 300
       end
     end
 
-    class MultipleQueuesJob
+    Job.run a: 1, b: 2
+
+    Asynchronic::Worker.start
+
+### Specify queue for each step
+
+    class Job
       extend Asynchronic::Pipeline
+      
       step :first_queue, queue: :queue1 do
-        Registry.add :first_queue
+        ...
       end
+      
       step :second_queue, queue: ->(ctx){ctx[:dynamic_queue]} do
-        Registry.add :second_queue
+        ...
+      end
+    end
+
+    Job.run dynamic_queue: :queue2
+
+    threads = [:queue1, :queue2].map do |queue|
+      Thread.new do
+        Asynchronic::Worker.start queue
       end
     end
 
