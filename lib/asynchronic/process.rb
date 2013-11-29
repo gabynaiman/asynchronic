@@ -70,9 +70,9 @@ module Asynchronic
 
     def log(message)
       start = Time.now
-      Asynchronic.logger.info "#{message} - Start"
+      Asynchronic.logger.info('Asynchronic') { "#{message} - Start" }
       result = yield
-      Asynchronic.logger.info "#{message} - End (Time: #{Time.now - start})"
+      Asynchronic.logger.info('Asynchronic') { "#{message} - End (Time: #{Time.now - start})" }assert_output()
       result
     end
 

@@ -1,6 +1,8 @@
 module Asynchronic
   class Worker
 
+    attr_reader :queue
+
     def initialize(queue=nil)
       @queue = queue || Asynchronic.default_queue
     end
