@@ -12,16 +12,14 @@ module Asynchronic
       self.class.new "#{children_key}#{key}", @data_store
     end
 
-    [:get, :set].each do |method|
+    [:get, :set, :clear].each do |method|
       define_method method do |*args, &block|
         @data_store.send method, self, *args, &block
       end
     end
 
-    [:keys, :clear].each do |method|
-      define_method method do |*args, &block|
-        @data_store.send method, *args, &block
-      end
+    def keys
+      @data_store.keys children_key
     end
 
     def merge(hash)
@@ -29,7 +27,7 @@ module Asynchronic
     end
 
     def to_hash
-      keys(children_key).inject({}) do |hash, key|
+      keys.inject({}) do |hash, key|
         hash[key[children_key.size..-1]] = @data_store.get key
         hash
       end
