@@ -2,21 +2,21 @@ require 'minitest_helper'
 
 describe Asynchronic::QueueEngine::InMemory do
 
-  let(:container) { Asynchronic::QueueEngine::InMemory::Container.new }
-  let(:queue) { container[:test_queue]}
+  let(:engine) { Asynchronic::QueueEngine::InMemory.new }
+  let(:queue) { engine[:test_queue]}
   let(:listener) { Asynchronic::QueueEngine::InMemory::Listener.new }
 
-  it 'Container' do
-    container.queues.must_be_empty
+  it 'Engine' do
+    engine.queues.must_be_empty
     
-    queue = container[:test_access]
+    queue = engine[:test_access]
     queue.must_be_instance_of Asynchronic::QueueEngine::InMemory::Queue
-    container.queues.must_equal [:test_access]
+    engine.queues.must_equal [:test_access]
     
-    container[:test_access].must_equal queue
+    engine[:test_access].must_equal queue
     
-    container.clear
-    container.queues.must_be_empty
+    engine.clear
+    engine.queues.must_be_empty
   end
 
   it 'Queue (push/pop)' do

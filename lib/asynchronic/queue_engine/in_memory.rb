@@ -1,6 +1,27 @@
 module Asynchronic
   module QueueEngine
-    module InMemory
+    class InMemory
+
+      def initialize
+        @queues ||= Hash.new { |h,k| h[k] = Queue.new }
+      end
+
+      def [](name)
+        @queues[name]
+      end
+
+      def queues
+        @queues.keys
+      end
+
+      def clear
+        @queues.clear
+      end
+
+      def listen(queue, &block)
+        Listener.new.tap { |l| l.listen queue, &block }
+      end
+
 
       class Queue < ::Queue
 
@@ -32,27 +53,6 @@ module Asynchronic
 
         def stop
           @stopping = true
-        end
-
-      end
-
-
-      class Container
-
-        def initialize
-          @queues ||= Hash.new { |h,k| h[k] = Queue.new }
-        end
-
-        def [](name)
-          @queues[name]
-        end
-
-        def queues
-          @queues.keys
-        end
-
-        def clear
-          @queues.clear
         end
 
       end

@@ -2,74 +2,48 @@ require 'minitest_helper'
 
 describe Asynchronic::DataStore::InMemory do
 
-  let(:db) { Asynchronic::DataStore::InMemory::DB.new }
+  let(:data_store) { Asynchronic::DataStore::InMemory.new }
 
-  describe Asynchronic::DataStore::InMemory::DB do
-
-    it 'Get/Set value' do
-      db.set :test_key, 123
-      db.get(:test_key).must_equal 123
-      db.keys.must_equal [:test_key]
-    end
-
-    it 'Key not found' do
-      db.get(:test_key).must_be_nil
-    end
-
-    it 'Keys'
-
-    it 'Merge!'
-
-    it 'Clear' do
-      db.set :test_key, 123
-      db.clear
-      db.keys.must_be_empty
-    end
-
+  it 'Get/Set value' do
+    data_store.set 'test_key', 123
+    data_store.get('test_key').must_equal 123
   end
 
-  describe Asynchronic::DataStore::InMemory::Key do
+  it 'Key not found' do
+    data_store.get('test_key').must_be_nil
+  end
 
-    describe 'Single key' do
+  it 'Keys' do
+    data_store.keys.must_be_empty
+    data_store.set 'test_key', 123
+    data_store.keys.must_equal ['test_key']
+  end
 
-      let(:key) { Asynchronic::DataStore::InMemory::Key.new db, :test }
+  it 'Nested keys' do
+    data_store.set 'a', 0
+    data_store.set 'a:1', 1
+    data_store.set 'a:2', 2
+    data_store.set 'b:3', 3
 
-      it 'To string' do
-        key.to_s.must_equal 'test'
-      end
+    data_store.keys('a').must_equal %w(a a:1 a:2)
+    data_store.keys('a:').must_equal %w(a:1 a:2)
+  end
 
-      it 'Get' do
-        db.set key.to_s, 123
-        key.get.must_equal 123
-      end
+  it 'Clear' do
+    data_store.set 'test_key', 123
+    data_store.clear
+    data_store.keys.must_be_empty
+  end
 
-      it 'Set' do
-        key.set 456
-        db.get(key.to_s).must_equal 456
-      end
+  it 'Nested clear' do
+    data_store.set 'a', 0
+    data_store.set 'a:1', 1
+    data_store.set 'a:2', 2
+    data_store.set 'b:3', 3
 
-    end
+    data_store.clear 'a:'
 
-    describe 'Nested keys' do
-
-      let(:key) { Asynchronic::DataStore::InMemory::Key.new(db, :test)[:nested] }
-
-      it 'To string' do
-        key.to_s.must_equal 'test:nested'
-      end
-
-      it 'Get' do
-        db.set key.to_s, 123
-        key.get.must_equal 123
-      end
-
-      it 'Set' do
-        key.set 456
-        db.get(key.to_s).must_equal 456
-      end
-
-    end
-
+    data_store.keys.must_equal %w(a b:3)
   end
 
 end

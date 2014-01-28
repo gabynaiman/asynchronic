@@ -1,29 +1,18 @@
 module Asynchronic
   class Job
 
-    extend Forwardable
-
-    def_delegators :data, :[], :[]=
-
     attr_reader :id
     attr_reader :name
 
-    def initialize(name, options={})
+    def initialize(name, &block)
       @id = SecureRandom.uuid
       @name = name
-      @data_store = options[:data_store]
-      data.merge! options.fetch(:data, {})
+      @block = block
     end
 
-    def enqueue(queue)
-      queue.push id
+    def execute(context)
+      @block.call context
     end
 
-    private
-
-    def data
-      @data_store[:jobs][id]
-    end
-  
   end
 end
