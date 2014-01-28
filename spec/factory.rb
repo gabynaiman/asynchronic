@@ -2,7 +2,7 @@ class Factory
 
   def self.single_job
     Asynchronic::Job.new :simple do |data|
-      data['output'] = data['input'] + 1
+      data[:output] = data[:input] + 1
     end
   end
 

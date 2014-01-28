@@ -20,7 +20,7 @@ describe 'Asynchronic::Job - Life cycle' do
   
   def process_queue
     job_id = context.queue(queue_name).pop
-    data = context[job_id].to_hash
+    data = context[job_id].to_hash.with_indiferent_access
     context[job_id].get.execute data
     context[job_id].merge data
   end
