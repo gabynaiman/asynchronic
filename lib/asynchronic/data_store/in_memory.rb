@@ -4,6 +4,7 @@ module Asynchronic
 
       def initialize
         @hash = {}
+        @mutex = Mutex.new
       end
 
       def get(key)
@@ -11,7 +12,7 @@ module Asynchronic
       end
 
       def set(key, value)
-        @hash[key.to_s] = value
+        @mutex.synchronize { @hash[key.to_s] = value }
       end
 
       def keys(key=nil)
