@@ -90,34 +90,49 @@ module Asynchronic
 
     private
 
-    def define_job(name, options={}, &block)
-      defaults = {
-        parent: parent ? parent.local_jobs[id] : local_context.to_s,
-        queue: queue
-      }
-
-      spec = Specification.new name, defaults.merge(options), &block
-      local_jobs[spec.id].set spec
-      Job.new spec, context
-    end
-
-    def update_status(status)
-      local_context[:status].set status
-    end
-
     def run
       update_status :running
       data = shared_data.to_hash.with_indiferent_access
-      instance_exec data, &specification.block 
+      Runtime.new(self).evaluate data, &specification.block 
       shared_data.merge data
       update_status :waiting
     rescue Exception => ex
       abort ex
     end
 
+    def update_status(status)
+      local_context[:status].set status
+    end
+
     def abort(exception)
       local_context[:error].set Error.new(exception)
       update_status :aborted
+    end
+
+
+    class Runtime
+
+      attr_reader :job
+
+      def initialize(job)
+        @job = job
+      end
+
+      def evaluate(*args, &block)
+        instance_exec *args, &block
+      end
+
+      def define_job(name, options={}, &block)
+        defaults = {
+          parent: job.parent ? job.parent.local_jobs[job.id] : job.local_context.to_s,
+          queue: job.queue
+        }
+
+        spec = Specification.new name, defaults.merge(options), &block
+        job.local_jobs[spec.id].set spec
+        Job.new spec, job.context
+      end
+
     end
 
   end
