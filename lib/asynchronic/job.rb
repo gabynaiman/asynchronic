@@ -17,11 +17,11 @@ module Asynchronic
     end
 
     def data
-      local_data.to_hash.with_indiferent_access
+      shared_data.to_hash.with_indiferent_access
     end
 
     def enqueue(data={})
-      local_data.merge data
+      shared_data.merge data
       key = parent ? parent.local_jobs[id] : id
       context.enqueue key, queue
       update_status :queued
@@ -30,17 +30,25 @@ module Asynchronic
     def execute
       update_status :running
       
-      data = local_data.to_hash.with_indiferent_access
-      instance_exec data, &specification.block 
-      local_data.merge data
+      begin
+        data = shared_data.to_hash.with_indiferent_access
+        instance_exec data, &specification.block 
+        shared_data.merge data
+        wakeup
+      rescue Exception => ex
+        abort ex
+      end
 
-      wakeup      
       parent.wakeup if parent
     end
 
     def wakeup
       update_status jobs.all?(&:completed?) ? :completed : :waiting
       jobs.select(&:ready?).each { |j| j.enqueue }
+    end
+
+    def error
+      local_context[:error].get
     end
 
     def status
@@ -74,8 +82,8 @@ module Asynchronic
       context[id]
     end
 
-    def local_data
-      parent ? parent.local_data : local_context[:data]
+    def shared_data
+      parent ? parent.shared_data : local_context[:data]
     end
 
     def local_jobs
@@ -86,7 +94,7 @@ module Asynchronic
 
     def define_job(name, options={}, &block)
       defaults = {
-        parent: context[id].to_s,
+        parent: parent ? parent.local_jobs[id] : local_context.to_s,
         queue: queue
       }
 
@@ -97,6 +105,11 @@ module Asynchronic
 
     def update_status(status)
       local_context[:status].set status
+    end
+
+    def abort(exception)
+      local_context[:error].set exception
+      update_status :aborted
     end
 
   end

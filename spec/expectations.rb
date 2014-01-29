@@ -16,10 +16,10 @@ module MiniTest::Assertions
     job.must_be :pending?
     job.jobs.must_be_empty
     job.data.must_be_empty
+    job.error.must_be_nil
   end
 
 end
-
 
 Asynchronic::QueueEngine::InMemory::Queue.infect_an_assertion :assert_enqueued, :must_enqueued
 Asynchronic::Job.infect_an_assertion :assert_have, :must_have

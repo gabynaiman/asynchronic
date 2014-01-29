@@ -52,4 +52,10 @@ class Factory
     end
   end
 
+  def self.exception_job(context)
+    context.define_job :exception do
+      raise 'Error for test'
+    end
+  end
+
 end

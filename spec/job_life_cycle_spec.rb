@@ -14,6 +14,10 @@ describe 'Asynchronic::Job - Life cycle' do
     context.load_job(queue.pop).execute
   end
 
+  def dump_data_store
+    context.data_store.keys.each { |k| puts "#{k}: #{context.data_store.get k}"}
+  end
+
   it 'Single' do
     job = Factory.single_job context
 
@@ -155,7 +159,21 @@ describe 'Asynchronic::Job - Life cycle' do
   end
 
   it 'Exception' do
-    skip 'To be defined'
+    job = Factory.exception_job context
+
+    job.must_be_initialized
+    queue.must_be_empty
+
+    job.enqueue
+
+    job.must_be :queued?
+    queue.must_enqueued job
+
+    process_queue
+
+    job.must_be :aborted?
+    job.error.must_be_instance_of RuntimeError
+    job.error.message.must_equal 'Error for test'
   end
 
 end
