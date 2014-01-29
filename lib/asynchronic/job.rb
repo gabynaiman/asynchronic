@@ -22,8 +22,7 @@ module Asynchronic
 
     def enqueue(data={})
       shared_data.merge data
-      key = parent ? parent.local_jobs[id] : id
-      context.enqueue key, queue
+      context.enqueue local_context.to_s, queue
       update_status :queued
     end
 
@@ -37,12 +36,12 @@ module Asynchronic
         if jobs.any?(&:aborted?)
           abort Error.new "Error caused by #{jobs.select(&:aborted?).map(&:name).join(', ')}"
         else
-          update_status jobs.all?(&:completed?) ? :completed : :waiting
+          update_status :completed if jobs.all?(&:completed?)
           jobs.select(&:ready?).each { |j| j.enqueue }
         end
       end
 
-      parent.wakeup if parent
+      parent.wakeup if parent && finalized?
     end
 
     def error
@@ -63,21 +62,29 @@ module Asynchronic
       pending? && dependencies.all?(&:completed?)
     end
 
+    def finalized?
+      completed? || aborted?
+    end
+
     def jobs(name=nil)
-      jobs = local_jobs.keys.map { |k| Job.new context[k].get, context }
+      # TODO: Mejorar la forma en que se identifican los jobs
+      jobs = local_jobs.keys.map do |key| 
+        spec = context[key].get
+        spec.is_a?(Specification) ? Job.new(spec, context) : nil
+      end.compact
       name ? jobs.detect { |j| j.name == name  } : jobs
     end
 
     def parent
-      Job.new context[specification.parent].get, context if specification.parent
+      @parent ||= Job.new context[specification.parent].get, context if specification.parent
     end
 
     def dependencies
-      parent.jobs.select { |j| specification.dependencies.include? j.name }
+      @dependencies ||= parent.jobs.select { |j| specification.dependencies.include? j.name }
     end
 
     def local_context
-      context[id]
+      parent ? parent.local_jobs[id] : context[id]
     end
 
     def shared_data
@@ -92,9 +99,7 @@ module Asynchronic
 
     def run
       update_status :running
-      data = shared_data.to_hash.with_indiferent_access
-      Runtime.new(self).evaluate data, &specification.block 
-      shared_data.merge data
+      Runtime.new(self).evaluate
       update_status :waiting
     rescue Exception => ex
       abort ex
@@ -118,13 +123,15 @@ module Asynchronic
         @job = job
       end
 
-      def evaluate(*args, &block)
-        instance_exec *args, &block
+      def evaluate(&block)
+        data = job.shared_data.to_hash.with_indiferent_access
+        instance_exec data, &job.specification.block
+        job.shared_data.merge data
       end
 
       def define_job(name, options={}, &block)
         defaults = {
-          parent: job.parent ? job.parent.local_jobs[job.id] : job.local_context.to_s,
+          parent: job.local_context.to_s,
           queue: job.queue
         }
 
