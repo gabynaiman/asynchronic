@@ -84,7 +84,7 @@ module Asynchronic
     end
 
     def local_context
-      parent ? parent.local_jobs[id] : context[id]
+      parent ? parent.local_jobs[id] : context.job_key[id]
     end
 
     def shared_data

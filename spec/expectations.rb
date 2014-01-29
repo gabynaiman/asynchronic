@@ -1,7 +1,7 @@
 module MiniTest::Assertions
 
   def assert_enqueued(expected_jobs, queue)
-    messages = Array(expected_jobs).map { |j| j.parent ? j.parent.local_jobs[j.id] : j.id }
+    messages = Array(expected_jobs).map { |j| j.local_context.to_s }
     queue.to_a.must_equal messages, "Jobs #{Array(expected_jobs).map(&:name)}"
   end
 

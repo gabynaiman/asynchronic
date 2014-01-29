@@ -29,12 +29,16 @@ module Asynchronic
 
     def define_job(*args, &block)
       specification = Specification.new(*args, &block)
-      self[specification.id].set specification
+      job_key[specification.id].set specification
       Job.new specification, self
     end
 
     def load_job(id)
       Job.new self[id].get, self
+    end
+
+    def job_key
+      self[:asynchronic][:job]
     end
 
   end
