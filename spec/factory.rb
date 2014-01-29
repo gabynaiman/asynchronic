@@ -52,6 +52,18 @@ class Factory
     end
   end
 
+  def self.nested_job(context)
+    context.define_job :nested_job do
+      define_job :level_1 do |data|
+        data[:input] += 1
+
+        define_job :level_2 do |data|
+          data[:output] = data[:input] ** 2
+        end
+      end
+    end
+  end
+
   def self.exception_job(context)
     context.define_job :exception do
       raise 'Error for test'

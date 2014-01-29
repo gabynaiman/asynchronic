@@ -138,7 +138,7 @@ describe 'Asynchronic::Job - Life cycle' do
     job.enqueue input: 10, times: 3
 
     job.must_be :queued?
-    job.jobs.must_be_empty    
+    job.jobs.must_be_empty
     job.must_have input: 10, times: 3
     queue.must_enqueued job
 
@@ -155,6 +155,44 @@ describe 'Asynchronic::Job - Life cycle' do
     3.times { |i| job.jobs("job_#{i}").must_be :completed? }
     hash = Hash[3.times.map { |i| ["key_#{i}", 10 * i] }]
     job.must_have hash.merge(input: 10, times: 3)
+    queue.must_be_empty
+  end
+
+  it 'Nested' do
+    job = Factory.nested_job context
+
+    job.must_be_initialized
+    queue.must_be_empty
+
+    job.enqueue input: 4
+
+    job.must_be :queued?
+    job.jobs.must_be_empty
+    job.must_have input: 4
+    queue.must_enqueued job
+
+    process_queue
+
+    job.must_be :waiting?
+    job.jobs(:level_1).must_be :queued?
+    job.jobs(:level_1).jobs.must_be_empty
+    job.must_have input: 4
+    queue.must_enqueued job.jobs(:level_1)
+
+    process_queue
+
+    job.must_be :waiting?
+    job.jobs(:level_1).must_be :waiting?
+    job.jobs(:level_1).jobs(:level_2).must_be :queued?
+    job.must_have input: 5
+    queue.must_enqueued job.jobs(:level_1).jobs(:level_2)
+
+    process_queue
+
+    job.must_be :completed?
+    job.jobs(:level_1).must_be :completed?
+    job.jobs(:level_1).jobs(:level_2).must_be :completed?
+    job.must_have input: 5, output: 25
     queue.must_be_empty
   end
 
