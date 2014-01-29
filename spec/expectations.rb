@@ -5,16 +5,22 @@ module MiniTest::Assertions
     queue.to_a.must_equal messages, "Jobs #{Array(expected_jobs).map(&:name)}"
   end
 
-  def assert_have_data(expected_hash, job)
-    actual_hash = job.local_data.to_hash
-    actual_hash.keys.count.must_equal expected_hash.keys.count, "Missing keys\nExpected keys: #{expected_hash.keys}\n  Actual keys: #{actual_hash.keys}"
+  def assert_have(expected_hash, job)
+    job.data.keys.count.must_equal expected_hash.keys.count, "Missing keys\nExpected keys: #{expected_hash.keys}\n  Actual keys: #{job.data.keys}"
     expected_hash.each do |k,v|
       job[k].must_equal v, "Key #{k}"
     end
+  end
+
+  def assert_be_initialized(job)
+    job.must_be :pending?
+    job.jobs.must_be_empty
+    job.data.must_be_empty
   end
 
 end
 
 
 Asynchronic::QueueEngine::InMemory::Queue.infect_an_assertion :assert_enqueued, :must_enqueued
-Asynchronic::Job.infect_an_assertion :assert_have_data, :must_have_data
+Asynchronic::Job.infect_an_assertion :assert_have, :must_have
+Asynchronic::Job.infect_an_assertion :assert_be_initialized, :must_be_initialized, :unary

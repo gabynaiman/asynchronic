@@ -45,8 +45,8 @@ class Factory
   def self.parallel_job(context)
     context.define_job :parallel do |data|
       data[:times].times do |i|
-        define_job "time_#{i}" do |d|
-          d["time_#{i}"] = d[:input] * i
+        define_job "job_#{i}" do |d|
+          d["key_#{i}"] = d[:input] * i
         end
       end
     end

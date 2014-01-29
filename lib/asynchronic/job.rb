@@ -6,6 +6,7 @@ module Asynchronic
     extend Forwardable
 
     def_delegators :specification, :id, :name, :queue
+    def_delegators :data, :[]
 
     attr_reader :specification
     attr_reader :context
@@ -15,8 +16,8 @@ module Asynchronic
       @context = context
     end
 
-    def [](key)
-      local_data.to_hash.with_indiferent_access[key]
+    def data
+      local_data.to_hash.with_indiferent_access
     end
 
     def enqueue(data={})

@@ -16,87 +16,146 @@ describe 'Asynchronic::Job - Life cycle' do
 
   it 'Single' do
     job = Factory.single_job context
+
+    job.must_be_initialized
+    queue.must_be_empty
+
     job.enqueue input: 1
 
-    job.must_have_data input: 1
+    job.must_be :queued?
+    job.must_have input: 1
     queue.must_enqueued job
 
     process_queue
 
-    job.must_have_data input: 1, output: 2
+    job.must_be :completed?
+    job.must_have input: 1, output: 2
     queue.must_be_empty
   end
 
   it 'Sequential' do
     job = Factory.sequential_job context
+
+    job.must_be_initialized
+    queue.must_be_empty
+
     job.enqueue input: 50
 
-    job.must_have_data input: 50
+    job.must_be :queued?
+    job.jobs.must_be_empty
+    job.must_have input: 50
     queue.must_enqueued job
 
     process_queue
 
-    job.must_have_data input: 50
+    job.must_be :waiting?
+    job.jobs(:step1).must_be :queued?
+    job.jobs(:step2).must_be :pending?
+    job.must_have input: 50
     queue.must_enqueued job.jobs(:step1)
 
     process_queue
 
-    job.must_have_data input: 50, partial: 500
+    job.must_be :waiting?
+    job.jobs(:step1).must_be :completed?
+    job.jobs(:step2).must_be :queued?
+    job.must_have input: 50, partial: 500
     queue.must_enqueued job.jobs(:step2)
 
     process_queue
 
-    job.must_have_data input: 50, partial: 500, output: 5
+    job.must_be :completed?
+    job.jobs(:step1).must_be :completed?
+    job.jobs(:step2).must_be :completed?
+    job.must_have input: 50, partial: 500, output: 5
     queue.must_be_empty
   end
 
   it 'Graph' do
     job = Factory.graph_job context
+
+    job.must_be_initialized
+    queue.must_be_empty
+
     job.enqueue input: 100
 
-    job.must_have_data input: 100
+    job.must_be :queued?
+    job.jobs.must_be_empty
+    job.must_have input: 100
     queue.must_enqueued job
 
     process_queue
 
-    job.must_have_data input: 100
+    job.must_be :waiting?
+    job.jobs(:sum).must_be :queued?
+    job.jobs('10%').must_be :pending?
+    job.jobs('20%').must_be :pending?
+    job.jobs(:totals).must_be :pending?
+    job.must_have input: 100
     queue.must_enqueued job.jobs(:sum)
     
     process_queue
 
-    job.must_have_data input: 100, sum: 200
+    job.must_be :waiting?
+    job.jobs(:sum).must_be :completed?
+    job.jobs('10%').must_be :queued?
+    job.jobs('20%').must_be :queued?
+    job.jobs(:totals).must_be :pending?
+    job.must_have input: 100, sum: 200
     queue.must_enqueued [job.jobs('20%'), job.jobs('10%')]
 
     2.times { process_queue }
 
-    job.must_have_data input: 100, sum: 200, '10%' => 20, '20%' => 40
+    job.must_be :waiting?
+    job.jobs(:sum).must_be :completed?
+    job.jobs('10%').must_be :completed?
+    job.jobs('20%').must_be :completed?
+    job.jobs(:totals).must_be :queued?
+    job.must_have input: 100, sum: 200, '10%' => 20, '20%' => 40
     queue.must_enqueued job.jobs(:totals)
 
     process_queue
 
-    job.must_have_data input: 100, sum: 200, '10%' => 20, '20%' => 40, output: {'10%' => 20, '20%' => 40}
+    job.must_be :completed?
+    job.jobs(:sum).must_be :completed?
+    job.jobs('10%').must_be :completed?
+    job.jobs('20%').must_be :completed?
+    job.jobs(:totals).must_be :completed?
+    job.must_have input: 100, sum: 200, '10%' => 20, '20%' => 40, output: {'10%' => 20, '20%' => 40}
     queue.must_be_empty
   end
 
   it 'Parallel' do
     job = Factory.parallel_job context
-    job.enqueue input: 2, times: 3
 
-    job.must_have_data input: 2, times: 3
+    job.must_be_initialized
+    queue.must_be_empty
+
+    job.enqueue input: 10, times: 3
+
+    job.must_be :queued?
+    job.jobs.must_be_empty    
+    job.must_have input: 10, times: 3
     queue.must_enqueued job
 
     process_queue
 
-    job.must_have_data input: 2, times: 3
-    queue.must_enqueued 3.times.map { |i| job.jobs("time_#{i}") }.reverse
+    job.must_be :waiting?
+    3.times { |i| job.jobs("job_#{i}").must_be :queued? }
+    job.must_have input: 10, times: 3
+    queue.must_enqueued 3.times.map { |i| job.jobs("job_#{i}") }.reverse
 
     3.times { process_queue }
 
-    hash = Hash[3.times.map { |i| ["time_#{i}", 2 * i] }]
-    job.must_have_data hash.merge(input: 2, times: 3)
+    job.must_be :completed?
+    3.times { |i| job.jobs("job_#{i}").must_be :completed? }
+    hash = Hash[3.times.map { |i| ["key_#{i}", 10 * i] }]
+    job.must_have hash.merge(input: 10, times: 3)
     queue.must_be_empty
   end
 
-  it 'Exception'
+  it 'Exception' do
+    skip 'To be defined'
+  end
 
 end

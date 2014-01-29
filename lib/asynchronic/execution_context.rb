@@ -20,7 +20,11 @@ module Asynchronic
     end
 
     def queue(name)
-      @queue_engine[name]
+      queue_engine[name]
+    end
+
+    def listen(queue, &block)
+      queue_engine.listen queue, &block
     end
 
     def define_job(*args, &block)
