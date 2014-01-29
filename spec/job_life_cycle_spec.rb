@@ -127,8 +127,6 @@ describe 'Asynchronic::Job - Life cycle' do
     job.jobs(:totals).must_be :completed?
     job.must_have input: 100, sum: 200, '10%' => 20, '20%' => 40, output: {'10%' => 20, '20%' => 40}
     queue.must_be_empty
-
-    dump_data_store
   end
 
   it 'Parallel' do
