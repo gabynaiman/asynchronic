@@ -123,7 +123,7 @@ module Asynchronic
         @job = job
       end
 
-      def evaluate(&block)
+      def evaluate
         data = job.shared_data.to_hash.with_indiferent_access
         instance_exec data, &job.specification.block
         job.shared_data.merge data

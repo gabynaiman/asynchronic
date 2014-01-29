@@ -237,6 +237,7 @@ describe 'Asynchronic::Job - Life cycle' do
     job.error.must_be_instance_of Asynchronic::Error
     job.error.message.must_equal 'Error caused by raise_exception'
 
+    job.jobs(:raise_exception).must_be :aborted?
     job.jobs(:raise_exception).error.must_be_instance_of Asynchronic::Error
     job.jobs(:raise_exception).error.message.must_equal 'Inner error for test'
   end
