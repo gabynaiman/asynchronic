@@ -3,6 +3,8 @@ module Asynchronic
 
     STATUSES = [:pending, :queued, :running, :waiting, :completed, :aborted]
 
+    UUID_REGEXP = '[a-z\d]{8}-[a-z\d]{4}-[a-z\d]{4}-[a-z\d]{4}-[a-z\d]{12}'
+
     extend Forwardable
 
     def_delegators :specification, :id, :name, :queue
@@ -67,11 +69,10 @@ module Asynchronic
     end
 
     def jobs(name=nil)
-      # TODO: Mejorar la forma en que se identifican los jobs
-      jobs = local_jobs.keys.map do |key| 
-        spec = context[key].get
-        spec.is_a?(Specification) ? Job.new(spec, context) : nil
-      end.compact
+      jobs = local_jobs.keys.
+        select { |k| k.match Regexp.new("^#{local_jobs[UUID_REGEXP]}$") }.
+        map { |k| Job.new context[k].get, context }
+
       name ? jobs.detect { |j| j.name == name  } : jobs
     end
 

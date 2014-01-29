@@ -1,6 +1,6 @@
 require 'minitest_helper'
 
-describe 'Asynchronic::Job - Life cycle' do
+describe Asynchronic::Job, 'Life cycle' do
 
   let(:context) do 
     queue_engine = Asynchronic::QueueEngine::InMemory.new
