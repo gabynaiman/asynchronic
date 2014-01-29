@@ -172,8 +172,35 @@ describe 'Asynchronic::Job - Life cycle' do
     process_queue
 
     job.must_be :aborted?
-    job.error.must_be_instance_of RuntimeError
+    job.error.must_be_instance_of Asynchronic::Error
     job.error.message.must_equal 'Error for test'
+  end
+
+  it 'Inner exception' do
+    job = Factory.inner_exception_job context
+
+    job.must_be_initialized
+    queue.must_be_empty
+
+    job.enqueue
+
+    job.must_be :queued?
+    queue.must_enqueued job
+
+    process_queue
+
+    job.must_be :waiting?
+    job.jobs(:raise_exception).must_be :queued?
+    queue.must_enqueued job.jobs(:raise_exception)
+
+    process_queue
+
+    job.must_be :aborted?
+    job.error.must_be_instance_of Asynchronic::Error
+    job.error.message.must_equal 'Error caused by raise_exception'
+
+    job.jobs(:raise_exception).error.must_be_instance_of Asynchronic::Error
+    job.jobs(:raise_exception).error.message.must_equal 'Inner error for test'
   end
 
 end

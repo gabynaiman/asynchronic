@@ -58,4 +58,12 @@ class Factory
     end
   end
 
+  def self.inner_exception_job(context)
+    context.define_job :inner_exception do
+      define_job :raise_exception do
+        raise 'Inner error for test'
+      end
+    end
+  end
+
 end

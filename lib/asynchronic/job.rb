@@ -28,23 +28,21 @@ module Asynchronic
     end
 
     def execute
-      update_status :running
-      
-      begin
-        data = shared_data.to_hash.with_indiferent_access
-        instance_exec data, &specification.block 
-        shared_data.merge data
-        wakeup
-      rescue Exception => ex
-        abort ex
-      end
-
-      parent.wakeup if parent
+      run
+      wakeup
     end
 
     def wakeup
-      update_status jobs.all?(&:completed?) ? :completed : :waiting
-      jobs.select(&:ready?).each { |j| j.enqueue }
+      if waiting?
+        if jobs.any?(&:aborted?)
+          abort Error.new "Error caused by #{jobs.select(&:aborted?).map(&:name).join(', ')}"
+        else
+          update_status jobs.all?(&:completed?) ? :completed : :waiting
+          jobs.select(&:ready?).each { |j| j.enqueue }
+        end
+      end
+
+      parent.wakeup if parent
     end
 
     def error
@@ -107,8 +105,18 @@ module Asynchronic
       local_context[:status].set status
     end
 
+    def run
+      update_status :running
+      data = shared_data.to_hash.with_indiferent_access
+      instance_exec data, &specification.block 
+      shared_data.merge data
+      update_status :waiting
+    rescue Exception => ex
+      abort ex
+    end
+
     def abort(exception)
-      local_context[:error].set exception
+      local_context[:error].set Error.new(exception)
       update_status :aborted
     end
 
