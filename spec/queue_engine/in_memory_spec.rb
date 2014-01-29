@@ -26,7 +26,7 @@ describe Asynchronic::QueueEngine::InMemory do
     queue.push 'msg_2'
     
     queue.size.must_equal 2
-    queue.to_a.must_equal %w(msg_2 msg_1)
+    queue.to_a.must_equal %w(msg_1 msg_2)
 
     msg = queue.pop
 

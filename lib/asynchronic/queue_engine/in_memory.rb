@@ -26,7 +26,7 @@ module Asynchronic
       class Queue < ::Queue
 
         def to_a
-          @que.dup.reverse
+          @que.dup
         end
 
         def pop

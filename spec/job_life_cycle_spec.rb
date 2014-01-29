@@ -106,7 +106,7 @@ describe 'Asynchronic::Job - Life cycle' do
     job.jobs('20%').must_be :queued?
     job.jobs(:totals).must_be :pending?
     job.must_have input: 100, sum: 200
-    queue.must_enqueued [job.jobs('20%'), job.jobs('10%')]
+    queue.must_enqueued [job.jobs('10%'), job.jobs('20%')]
 
     2.times { process_queue }
 
@@ -147,7 +147,7 @@ describe 'Asynchronic::Job - Life cycle' do
     job.must_be :waiting?
     3.times { |i| job.jobs("job_#{i}").must_be :queued? }
     job.must_have input: 10, times: 3
-    queue.must_enqueued 3.times.map { |i| job.jobs("job_#{i}") }.reverse
+    queue.must_enqueued 3.times.map { |i| job.jobs("job_#{i}") }
 
     3.times { process_queue }
 
