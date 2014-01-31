@@ -12,7 +12,11 @@ module Asynchronic
     end
 
     def [](key)
-      Key.new(key, data_store)
+      data_store.get key
+    end
+
+    def []=(key, value)
+      data_store.set key, value
     end
 
     def enqueue(msg, queue=nil)
@@ -29,16 +33,12 @@ module Asynchronic
 
     def define_job(*args, &block)
       specification = Specification.new(*args, &block)
-      job_key[specification.id].set specification
+      self[Job::Lookup.new(specification).job] = specification
       Job.new specification, self
     end
 
     def load_job(id)
-      Job.new self[id].get, self
-    end
-
-    def job_key
-      self[:asynchronic][:job]
+      Job.new self[id], self
     end
 
   end

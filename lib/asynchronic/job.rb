@@ -19,12 +19,16 @@ module Asynchronic
     end
 
     def data
-      shared_data.to_hash.with_indiferent_access
+      parent ? parent.data : context.data_store.to_hash(lookup.data).with_indiferent_access
+    end
+
+    def merge(data)
+      parent ? parent.merge(data) : context.data_store.merge(lookup.data, data)
     end
 
     def enqueue(data={})
-      shared_data.merge data
-      context.enqueue local_context.to_s, queue
+      merge data
+      context.enqueue lookup.job, queue
       update_status :queued
     end
 
@@ -38,8 +42,11 @@ module Asynchronic
         if jobs.any?(&:aborted?)
           abort Error.new "Error caused by #{jobs.select(&:aborted?).map(&:name).join(', ')}"
         else
-          update_status :completed if jobs.all?(&:completed?)
-          jobs.select(&:ready?).each { |j| j.enqueue }
+          if jobs.all?(&:completed?)
+            update_status :completed 
+          else
+            jobs.select(&:ready?).each { |j| j.enqueue }
+          end
         end
       end
 
@@ -47,11 +54,11 @@ module Asynchronic
     end
 
     def error
-      local_context[:error].get
+      context[lookup.error]
     end
 
     def status
-      local_context[:status].get || :pending
+      context[lookup.status] || :pending
     end
 
     STATUSES.each do |status|
@@ -69,31 +76,19 @@ module Asynchronic
     end
 
     def jobs(name=nil)
-      jobs = local_jobs.keys.
-        select { |k| k.match Regexp.new("^#{local_jobs[UUID_REGEXP]}$") }.
-        map { |k| Job.new context[k].get, context }
+      jobs = context.data_store.keys(lookup.jobs).
+        select { |k| k.match Regexp.new("^#{lookup.jobs[UUID_REGEXP]}$") }.
+        map { |k| Job.new context[k], context }
 
       name ? jobs.detect { |j| j.name == name  } : jobs
     end
 
     def parent
-      @parent ||= Job.new context[specification.parent].get, context if specification.parent
+      @parent ||= Job.new context[specification.parent], context if specification.parent
     end
 
     def dependencies
       @dependencies ||= parent.jobs.select { |j| specification.dependencies.include? j.name }
-    end
-
-    def local_context
-      parent ? parent.local_jobs[id] : context.job_key[id]
-    end
-
-    def shared_data
-      parent ? parent.shared_data : local_context[:data]
-    end
-
-    def local_jobs
-      local_context[:jobs]
     end
 
     private
@@ -107,40 +102,16 @@ module Asynchronic
     end
 
     def update_status(status)
-      local_context[:status].set status
+      context[lookup.status] = status
     end
 
     def abort(exception)
-      local_context[:error].set Error.new(exception)
+      context[lookup.error] = Error.new(exception)
       update_status :aborted
     end
 
-
-    class Runtime
-
-      attr_reader :job
-
-      def initialize(job)
-        @job = job
-      end
-
-      def evaluate
-        data = job.shared_data.to_hash.with_indiferent_access
-        instance_exec data, &job.specification.block
-        job.shared_data.merge data
-      end
-
-      def define_job(name, options={}, &block)
-        defaults = {
-          parent: job.local_context.to_s,
-          queue: job.queue
-        }
-
-        spec = Specification.new name, defaults.merge(options), &block
-        job.local_jobs[spec.id].set spec
-        Job.new spec, job.context
-      end
-
+    def lookup
+      @lookup ||= Lookup.new specification
     end
 
   end

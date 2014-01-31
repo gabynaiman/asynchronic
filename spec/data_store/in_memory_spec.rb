@@ -19,6 +19,23 @@ describe Asynchronic::DataStore::InMemory do
     data_store.keys.must_equal ['test_key']
   end
 
+  it 'Merge' do
+    data_store.set 'a:1', 0
+    data_store.merge 'a', '1' => 1, '2' => 2
+
+    data_store.get('a:1').must_equal 1
+    data_store.get('a:2').must_equal 2
+  end
+
+  it 'To hash' do
+    data_store.set 'a', 0
+    data_store.set 'a:1', 1
+    data_store.set 'a:2', 2
+    data_store.set 'b:3', 3
+
+    data_store.to_hash('a').must_equal '1' => 1, '2' => 2
+  end
+
   it 'Nested keys' do
     data_store.set 'a', 0
     data_store.set 'a:1', 1

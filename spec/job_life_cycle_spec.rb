@@ -14,10 +14,6 @@ describe Asynchronic::Job, 'Life cycle' do
     context.load_job(queue.pop).execute
   end
 
-  def dump_data_store
-    context.data_store.keys.each { |k| puts "#{k}: #{context.data_store.get k}"}
-  end
-
   it 'Single' do
     job = Factory.single_job context
 
