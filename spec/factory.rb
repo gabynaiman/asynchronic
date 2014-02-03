@@ -1,6 +1,6 @@
 class Factory
 
-  def self.single_job(context)
+  def self.simple_job(context)
     context.define_job :simple do |data|
       data[:output] = data[:input] + 1
     end
@@ -53,7 +53,7 @@ class Factory
   end
 
   def self.nested_job(context)
-    context.define_job :nested_job do
+    context.define_job :nested do
       define_job :level_1 do |data|
         data[:input] += 1
 

@@ -15,7 +15,7 @@ describe Asynchronic::Job, 'Life cycle' do
   end
 
   it 'Single' do
-    job = Factory.single_job context
+    job = Factory.simple_job context
 
     job.must_be_initialized
     queue.must_be_empty
