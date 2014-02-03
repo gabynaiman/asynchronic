@@ -11,7 +11,7 @@ module Asynchronic
       end
 
       def queues
-        @queues.keys
+        @queues.keys.map(&:to_sym)
       end
 
       def clear
