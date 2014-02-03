@@ -27,10 +27,6 @@ module Asynchronic
       queue_engine[name]
     end
 
-    def listen(queue, &block)
-      queue_engine.listen queue, &block
-    end
-
     def define_job(*args, &block)
       specification = Specification.new(*args, &block)
       self[Job::Lookup.new(specification).job] = specification

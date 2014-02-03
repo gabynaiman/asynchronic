@@ -18,10 +18,6 @@ module Asynchronic
         @queues.clear
       end
 
-      def listen(queue, &block)
-        Listener.new.tap { |l| l.listen queue, &block }
-      end
-
 
       class Queue < ::Queue
 
@@ -30,9 +26,7 @@ module Asynchronic
         end
 
         def pop
-          super
-        rescue Exception
-          nil
+          super rescue nil
         end
 
       end
