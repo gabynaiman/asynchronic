@@ -22,5 +22,6 @@ module MiniTest::Assertions
 end
 
 Asynchronic::QueueEngine::InMemory::Queue.infect_an_assertion :assert_enqueued, :must_enqueued
+Asynchronic::QueueEngine::Ost::Queue.infect_an_assertion :assert_enqueued, :must_enqueued
 Asynchronic::Job.infect_an_assertion :assert_have, :must_have
 Asynchronic::Job.infect_an_assertion :assert_be_initialized, :must_be_initialized, :unary

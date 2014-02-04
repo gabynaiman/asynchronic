@@ -1,12 +1,6 @@
-require 'minitest_helper'
-
-describe Asynchronic::Job, 'Life cycle' do
-
-  let(:context) do 
-    queue_engine = Asynchronic::QueueEngine::InMemory.new
-    data_store = Asynchronic::DataStore::InMemory.new
-    Asynchronic::ExecutionContext.new data_store, queue_engine, :test_queue
-  end
+module LifeCycleExamples
+  
+  let(:context) { Asynchronic::ExecutionContext.new data_store, queue_engine, :test_queue }
 
   let(:queue) { context.queue(:test_queue) }
 
