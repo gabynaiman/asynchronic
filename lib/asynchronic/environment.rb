@@ -3,10 +3,8 @@ module Asynchronic
 
     attr_reader :data_store
     attr_reader :queue_engine
-    attr_reader :default_queue
     
-    #TODO: Mover default_queue al queue_engine
-    def initialize(data_store, queue_engine, default_queue=:default)
+    def initialize(data_store, queue_engine)
       @data_store = data_store
       @queue_engine = queue_engine
       @default_queue = default_queue
@@ -20,12 +18,16 @@ module Asynchronic
       data_store.set key, value
     end
 
-    def enqueue(msg, queue=nil)
-      queue_engine[queue || default_queue].push msg
-    end
-
     def queue(name)
       queue_engine[name]
+    end
+
+    def default_queue
+      queue(queue_engine.default_queue)
+    end
+
+    def enqueue(msg, queue=nil)
+      queue(queue || queue_engine.default_queue).push msg
     end
 
     def build_job(job_class, options={})

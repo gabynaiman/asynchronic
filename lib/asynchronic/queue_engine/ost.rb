@@ -2,7 +2,10 @@ module Asynchronic
   module QueueEngine
     class Ost
       
-      def initialize
+      attr_reader :default_queue
+
+      def initialize(default_queue=nil)
+        @default_queue = default_queue || :asynchronic
         @queues ||= Hash.new { |h,k| h[k] = Queue.new k }
       end
 

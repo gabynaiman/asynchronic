@@ -1,8 +1,8 @@
 module LifeCycleExamples
   
-  let(:env) { Asynchronic::Environment.new data_store, queue_engine, :test_queue }
+  let(:env) { Asynchronic::Environment.new data_store, queue_engine }
 
-  let(:queue) { env.queue(:test_queue) }
+  let(:queue) { env.default_queue }
 
   def process_queue
     env.load_process(queue.pop).execute
@@ -187,6 +187,10 @@ module LifeCycleExamples
   end
 
   it 'Dependency alias' do
+    skip 'Not implemented'
+  end
+  
+  it 'Custom queue' do
     skip 'Not implemented'
   end
 
