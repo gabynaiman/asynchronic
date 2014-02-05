@@ -26,7 +26,7 @@ module Asynchronic
         queue: process.queue
       }
       
-      process.context.build_job job_class, defaults.merge(options)
+      process.env.build_job job_class, defaults.merge(options)
     end
     
     def data

@@ -1,15 +1,15 @@
 module LifeCycleExamples
   
-  let(:context) { Asynchronic::ExecutionContext.new data_store, queue_engine, :test_queue }
+  let(:env) { Asynchronic::Environment.new data_store, queue_engine, :test_queue }
 
-  let(:queue) { context.queue(:test_queue) }
+  let(:queue) { env.queue(:test_queue) }
 
   def process_queue
-    context.load_process(queue.pop).execute
+    env.load_process(queue.pop).execute
   end
 
   it 'Basic' do
-    process = context.build_process BasicJob
+    process = env.build_process BasicJob
 
     process.must_be_initialized
     queue.must_be_empty
@@ -28,7 +28,7 @@ module LifeCycleExamples
   end
 
   it 'Sequential' do
-    process = context.build_process SequentialJob
+    process = env.build_process SequentialJob
 
     process.must_be_initialized
     queue.must_be_empty
@@ -66,7 +66,7 @@ module LifeCycleExamples
   end
 
   it 'Graph' do
-    process = context.build_process GraphJob
+    process = env.build_process GraphJob
 
     process.must_be_initialized
     queue.must_be_empty
@@ -120,7 +120,7 @@ module LifeCycleExamples
   end
 
   it 'Parallel' do
-    process = context.build_process ParallelJob
+    process = env.build_process ParallelJob
 
     process.must_be_initialized
     queue.must_be_empty
@@ -149,7 +149,7 @@ module LifeCycleExamples
   end
 
   it 'Nested' do
-    process = context.build_process NestedJob
+    process = env.build_process NestedJob
 
     process.must_be_initialized
     queue.must_be_empty
@@ -191,7 +191,7 @@ module LifeCycleExamples
   end
 
   it 'Exception' do
-    process = context.build_process ExceptionJob
+    process = env.build_process ExceptionJob
 
     process.must_be_initialized
     queue.must_be_empty
@@ -209,7 +209,7 @@ module LifeCycleExamples
   end
 
   it 'Inner exception' do
-    process = context.build_process InnerExceptionJob
+    process = env.build_process InnerExceptionJob
 
     process.must_be_initialized
     queue.must_be_empty

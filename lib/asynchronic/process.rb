@@ -11,24 +11,24 @@ module Asynchronic
     def_delegators :data, :[]
 
     attr_reader :job
-    attr_reader :context
+    attr_reader :env
 
-    def initialize(job, context)
+    def initialize(job, env)
       @job = job
-      @context = context
+      @env = env
     end
 
     def data
-      parent ? parent.data : context.data_store.to_hash(lookup.data).with_indiferent_access
+      parent ? parent.data : env.data_store.to_hash(lookup.data).with_indiferent_access
     end
 
     def merge(data)
-      parent ? parent.merge(data) : context.data_store.merge(lookup.data, data)
+      parent ? parent.merge(data) : env.data_store.merge(lookup.data, data)
     end
 
     def enqueue(data={})
       merge data
-      context.enqueue lookup.id, queue
+      env.enqueue lookup.id, queue
       update_status :queued
     end
 
@@ -54,11 +54,11 @@ module Asynchronic
     end
 
     def error
-      context[lookup.error]
+      env[lookup.error]
     end
 
     def status
-      context[lookup.status] || :pending
+      env[lookup.status] || :pending
     end
 
     STATUSES.each do |status|
@@ -76,15 +76,15 @@ module Asynchronic
     end
 
     def processes(klass=nil)
-      processes = context.data_store.keys(lookup.jobs).
+      processes = env.data_store.keys(lookup.jobs).
         select { |k| k.match Regexp.new("^#{lookup.jobs[UUID_REGEXP]}$") }.
-        map { |k| Process.new context[k], context }
+        map { |k| Process.new env[k], env }
 
       klass ? processes.detect { |p| p.job.is_a? klass } : processes
     end
 
     def parent
-      @parent ||= Process.new context[job.parent], context if job.parent
+      @parent ||= Process.new env[job.parent], env if job.parent
     end
 
     def dependencies
@@ -102,11 +102,11 @@ module Asynchronic
     end
 
     def update_status(status)
-      context[lookup.status] = status
+      env[lookup.status] = status
     end
 
     def abort(exception)
-      context[lookup.error] = Error.new(exception)
+      env[lookup.error] = Error.new(exception)
       update_status :aborted
     end
 

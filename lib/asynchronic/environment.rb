@@ -1,5 +1,5 @@
 module Asynchronic
-  class ExecutionContext
+  class Environment
 
     attr_reader :data_store
     attr_reader :queue_engine
