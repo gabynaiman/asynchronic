@@ -23,7 +23,7 @@ module Asynchronic
     def define_job(job_class, options={})
       defaults = {
         parent: process.job.lookup.id,
-        queue: process.queue
+        queue: job_class.queue || process.queue
       }
       
       process.env.build_job job_class, defaults.merge(options)

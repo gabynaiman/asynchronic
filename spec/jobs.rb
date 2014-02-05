@@ -102,6 +102,21 @@ class DependencyAliasJob < Asynchronic::Job
 end
 
 
+class CustomQueueJob < Asynchronic::Job
+  queue :queue_1
+  define do
+    define_job Reverse, queue: :queue_2
+  end
+
+  class Reverse < Asynchronic::Job
+    queue :queue_3
+    define do
+      data[:output] = data[:input].reverse
+    end
+  end
+end
+
+
 class ExceptionJob < Asynchronic::Job
   define do
     raise 'Error for test'

@@ -4,7 +4,7 @@ module LifeCycleExamples
 
   let(:queue) { env.default_queue }
 
-  def process_queue
+  def execute_work(queue)
     env.load_process(queue.pop).execute
   end
 
@@ -20,7 +20,7 @@ module LifeCycleExamples
     process.must_have input: 1
     queue.must_enqueued process
 
-    process_queue
+    execute_work queue
 
     process.must_be :completed?
     process.must_have input: 1, output: 2
@@ -40,7 +40,7 @@ module LifeCycleExamples
     process.must_have input: 50
     queue.must_enqueued process
 
-    process_queue
+    execute_work queue
 
     process.must_be :waiting?
     process.processes(SequentialJob::Step1).must_be :queued?
@@ -48,7 +48,7 @@ module LifeCycleExamples
     process.must_have input: 50
     queue.must_enqueued process.processes(SequentialJob::Step1)
 
-    process_queue
+    execute_work queue
 
     process.must_be :waiting?
     process.processes(SequentialJob::Step1).must_be :completed?
@@ -56,7 +56,7 @@ module LifeCycleExamples
     process.must_have input: 50, partial: 500
     queue.must_enqueued process.processes(SequentialJob::Step2)
 
-    process_queue
+    execute_work queue
 
     process.must_be :completed?
     process.processes(SequentialJob::Step1).must_be :completed?
@@ -78,7 +78,7 @@ module LifeCycleExamples
     process.must_have input: 100
     queue.must_enqueued process
 
-    process_queue
+    execute_work queue
 
     process.must_be :waiting?
     process.processes(GraphJob::Sum).must_be :queued?
@@ -88,7 +88,7 @@ module LifeCycleExamples
     process.must_have input: 100
     queue.must_enqueued process.processes(GraphJob::Sum)
     
-    process_queue
+    execute_work queue
 
     process.must_be :waiting?
     process.processes(GraphJob::Sum).must_be :completed?
@@ -98,7 +98,7 @@ module LifeCycleExamples
     process.must_have input: 100, sum: 200
     queue.must_enqueued [process.processes(GraphJob::TenPercent), process.processes(GraphJob::TwentyPercent)]
 
-    2.times { process_queue }
+    2.times { execute_work queue }
 
     process.must_be :waiting?
     process.processes(GraphJob::Sum).must_be :completed?
@@ -108,7 +108,7 @@ module LifeCycleExamples
     process.must_have input: 100, sum: 200, '10%' => 20, '20%' => 40
     queue.must_enqueued process.processes(GraphJob::Total)
 
-    process_queue
+    execute_work queue
 
     process.must_be :completed?
     process.processes(GraphJob::Sum).must_be :completed?
@@ -132,14 +132,14 @@ module LifeCycleExamples
     process.must_have input: 10, times: 3
     queue.must_enqueued process
 
-    process_queue
+    execute_work queue
 
     process.must_be :waiting?
     process.processes.each { |p| p.must_be :queued? }
     process.must_have input: 10, times: 3
     queue.must_enqueued process.processes
 
-    3.times { process_queue }
+    3.times { execute_work queue }
 
     process.must_be :completed?
     process.processes.each { |p| p.must_be :completed? }
@@ -161,7 +161,7 @@ module LifeCycleExamples
     process.must_have input: 4
     queue.must_enqueued process
 
-    process_queue
+    execute_work queue
 
     process.must_be :waiting?
     process.processes(NestedJob::Level1).must_be :queued?
@@ -169,7 +169,7 @@ module LifeCycleExamples
     process.must_have input: 4
     queue.must_enqueued process.processes(NestedJob::Level1)
 
-    process_queue
+    execute_work queue
 
     process.must_be :waiting?
     process.processes(NestedJob::Level1).must_be :waiting?
@@ -177,7 +177,7 @@ module LifeCycleExamples
     process.must_have input: 5
     queue.must_enqueued process.processes(NestedJob::Level1).processes(NestedJob::Level1::Level2)
 
-    process_queue
+    execute_work queue
 
     process.must_be :completed?
     process.processes(NestedJob::Level1).must_be :completed?
@@ -191,7 +191,43 @@ module LifeCycleExamples
   end
   
   it 'Custom queue' do
-    skip 'Not implemented'
+    process = env.build_process CustomQueueJob
+
+    process.must_be_initialized
+    
+    env.queue(:queue_1).must_be_empty
+    env.queue(:queue_2).must_be_empty
+    env.queue(:queue_3).must_be_empty
+
+    process.enqueue input: 'hello'
+
+    process.must_be :queued?
+    process.processes.must_be_empty
+    process.must_have input: 'hello'
+    
+    env.queue(:queue_1).must_enqueued process
+    env.queue(:queue_2).must_be_empty
+    env.queue(:queue_3).must_be_empty
+
+    execute_work env.queue(:queue_1)
+
+    process.must_be :waiting?
+    process.processes(CustomQueueJob::Reverse).must_be :queued?
+    process.must_have input: 'hello'
+    
+    env.queue(:queue_1).must_be_empty
+    env.queue(:queue_2).must_enqueued process.processes(CustomQueueJob::Reverse)
+    env.queue(:queue_3).must_be_empty
+
+    execute_work env.queue(:queue_2)
+
+    process.must_be :completed?
+    process.processes(CustomQueueJob::Reverse).must_be :completed?
+    process.must_have input: 'hello', output: 'olleh'
+    
+    env.queue(:queue_1).must_be_empty
+    env.queue(:queue_2).must_be_empty
+    env.queue(:queue_3).must_be_empty
   end
 
   it 'Exception' do
@@ -205,7 +241,7 @@ module LifeCycleExamples
     process.must_be :queued?
     queue.must_enqueued process
 
-    process_queue
+    execute_work queue
 
     process.must_be :aborted?
     process.error.must_be_instance_of Asynchronic::Error
@@ -223,13 +259,13 @@ module LifeCycleExamples
     process.must_be :queued?
     queue.must_enqueued process
 
-    process_queue
+    execute_work queue
 
     process.must_be :waiting?
     process.processes(ExceptionJob).must_be :queued?
     queue.must_enqueued process.processes(ExceptionJob)
 
-    process_queue
+    execute_work queue
 
     process.must_be :aborted?
     process.error.must_be_instance_of Asynchronic::Error

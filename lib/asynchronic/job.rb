@@ -9,7 +9,7 @@ module Asynchronic
 
     def initialize(options={})
       @id = SecureRandom.uuid
-      @queue = options[:queue]
+      @queue = options[:queue] || self.class.queue
       @parent = options[:parent]
       @dependencies = Array(options[:dependencies] || options[:dependency])
       @local = options[:local] || {}
@@ -19,6 +19,10 @@ module Asynchronic
 
     def lookup
       DataStore::Lookup.new self
+    end
+
+    def self.queue(queue=nil)
+      queue ? @queue = queue : @queue
     end
 
     def self.implementation
