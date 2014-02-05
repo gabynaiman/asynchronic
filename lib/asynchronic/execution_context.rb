@@ -27,14 +27,13 @@ module Asynchronic
       queue_engine[name]
     end
 
-    def define_job(*args, &block)
-      specification = Specification.new(*args, &block)
-      self[Job::Lookup.new(specification).job] = specification
-      Job.new specification, self
+    def build_process(job)
+      self[job.lookup.id] = job
+      Process.new job, self
     end
 
-    def load_job(id)
-      Job.new self[id], self
+    def load_process(id)
+      Process.new self[id], self
     end
 
   end

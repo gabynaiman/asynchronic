@@ -3,7 +3,7 @@ require 'minitest/autorun'
 require 'minitest/great_expectations'
 require 'turn'
 require 'asynchronic'
-require 'factory'
+require 'jobs'
 require 'expectations'
 
 Turn.config do |c|
