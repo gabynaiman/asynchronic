@@ -95,7 +95,7 @@ module Asynchronic
 
     def run
       update_status :running
-      Runtime.new(self).evaluate
+      Runtime.evaluate self
       update_status :waiting
     rescue Exception => ex
       abort ex

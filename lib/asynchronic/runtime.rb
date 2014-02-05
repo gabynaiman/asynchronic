@@ -14,6 +14,10 @@ module Asynchronic
       process.merge @data
     end
 
+    def self.evaluate(process)
+      new(process).evaluate
+    end
+
     private
 
     def define_job(job_class, options={})
