@@ -187,7 +187,53 @@ module LifeCycleExamples
   end
 
   it 'Dependency alias' do
-    skip 'Not implemented'
+    process = env.build_process DependencyAliasJob
+
+    process.must_be_initialized
+    queue.must_be_empty
+
+    process.enqueue
+
+    process.must_be :queued?
+    process.processes.must_be_empty
+    process.data.must_be_empty
+    queue.must_enqueued process
+
+    execute_work queue
+
+    process.must_be :waiting?
+    process.processes(:word_1).must_be :queued?
+    process.processes(:word_2).must_be :pending?
+    process.processes(:word_3).must_be :pending?
+    process.data.must_be_empty
+    queue.must_enqueued process.processes(:word_1)
+
+    execute_work queue
+
+    process.must_be :waiting?
+    process.processes(:word_1).must_be :completed?
+    process.processes(:word_2).must_be :queued?
+    process.processes(:word_3).must_be :pending?
+    process.must_have text: 'Take'
+    queue.must_enqueued process.processes(:word_2)
+
+    execute_work queue
+
+    process.must_be :waiting?
+    process.processes(:word_1).must_be :completed?
+    process.processes(:word_2).must_be :completed?
+    process.processes(:word_3).must_be :queued?
+    process.must_have text: 'Take it'
+    queue.must_enqueued process.processes(:word_3)
+
+    execute_work queue
+
+    process.must_be :completed?
+    process.processes(:word_1).must_be :completed?
+    process.processes(:word_2).must_be :completed?
+    process.processes(:word_3).must_be :completed?
+    process.must_have text: 'Take it easy'
+    queue.must_be_empty
   end
   
   it 'Custom queue' do

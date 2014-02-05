@@ -99,6 +99,17 @@ end
 
 
 class DependencyAliasJob < Asynchronic::Job
+  define do
+    define_job Write, local: {text: 'Take'}, alias: :word_1
+    define_job Write, local: {text: 'it'}, alias: :word_2, dependency: :word_1
+    define_job Write, local: {text: 'easy'}, alias: :word_3, dependency: :word_2
+  end
+
+  class Write < Asynchronic::Job
+    define do
+      data[:text] = "#{data[:text]} #{text}".strip
+    end
+  end
 end
 
 

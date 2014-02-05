@@ -75,12 +75,13 @@ module Asynchronic
       completed? || aborted?
     end
 
-    def processes(klass=nil)
+    def processes(name=nil)
       processes = env.data_store.keys(lookup.jobs).
         select { |k| k.match Regexp.new("^#{lookup.jobs[UUID_REGEXP]}$") }.
-        map { |k| Process.new env[k], env }
+        # map { |k| Process.new env[k], env }
+        map { |k| env.load_process k }
 
-      klass ? processes.detect { |p| p.job.is_a? klass } : processes
+      name ? processes.detect { |p| p.name == name.to_s } : processes
     end
 
     def parent
@@ -88,7 +89,7 @@ module Asynchronic
     end
 
     def dependencies
-      @dependencies ||= parent.processes.select { |p| job.dependencies.include? p.job.class }
+      @dependencies ||= parent.processes.select { |p| job.dependencies.include? p.name }
     end
 
     private
