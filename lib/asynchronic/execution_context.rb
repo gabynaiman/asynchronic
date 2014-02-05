@@ -5,6 +5,7 @@ module Asynchronic
     attr_reader :queue_engine
     attr_reader :default_queue
     
+    #TODO: Mover default_queue al queue_engine
     def initialize(data_store, queue_engine, default_queue=:default)
       @data_store = data_store
       @queue_engine = queue_engine
@@ -27,9 +28,14 @@ module Asynchronic
       queue_engine[name]
     end
 
-    def build_process(job)
-      self[job.lookup.id] = job
-      Process.new job, self
+    def build_job(job_class, options={})
+      job_class.new(options).tap do |job|
+        self[job.lookup.id] = job
+      end
+    end
+
+    def build_process(job_class)
+      Process.new build_job(job_class), self
     end
 
     def load_process(id)

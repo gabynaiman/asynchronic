@@ -22,9 +22,7 @@ module Asynchronic
         queue: process.queue
       }
       
-      #Ver si te puede mover al build de context (context.build_job job_class, options)
-      job = job_class.new defaults.merge(options)
-      process.context[job.lookup.id] = job
+      process.context.build_job job_class, defaults.merge(options)
     end
     
     def data
