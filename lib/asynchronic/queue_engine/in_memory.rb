@@ -22,14 +22,23 @@ module Asynchronic
       end
 
 
-      class Queue < ::Queue
+      class Queue
 
-        def to_a
-          @que.dup
+        extend Forwardable
+
+        def_delegators :@queue, :size, :empty?, :to_a
+
+        def initialize
+          @queue = []
+          @mutex = Mutex.new
         end
 
         def pop
-          super rescue nil
+          @mutex.synchronize { @queue.shift }
+        end
+
+        def push(message)
+          @mutex.synchronize { @queue.push message }
         end
 
       end
