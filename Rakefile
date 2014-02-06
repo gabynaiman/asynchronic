@@ -7,4 +7,11 @@ Rake::TestTask.new(:spec) do |t|
   t.verbose = false
 end
 
+task :console do
+  require 'pry'
+  require 'asynchronic'
+  ARGV.clear
+  Pry.start
+end
+
 task default: :spec
