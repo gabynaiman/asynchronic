@@ -140,3 +140,9 @@ class InnerExceptionJob < Asynchronic::Job
     define_job ExceptionJob
   end
 end
+
+
+class WorkerJob < Asynchronic::Job
+  define do
+  end
+end

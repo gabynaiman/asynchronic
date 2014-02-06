@@ -21,6 +21,10 @@ module Asynchronic
         @queues.clear
       end
 
+      def listener
+        Listener.new
+      end
+
 
       class Queue
 

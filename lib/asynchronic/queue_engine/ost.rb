@@ -22,6 +22,10 @@ module Asynchronic
         redis.keys('ost:*').each { |k| redis.del k }
       end
 
+      def listener
+        Listener.new
+      end
+
       private
 
       def redis
@@ -36,7 +40,7 @@ module Asynchronic
         end
 
         def empty?
-          items.empty?
+          !redis.exists(key)
         end
 
         def size

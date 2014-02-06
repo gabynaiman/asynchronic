@@ -36,12 +36,12 @@ module Asynchronic
       end
     end
 
-    def build_process(job_class)
-      Process.new build_job(job_class), self
+    def build_process(job_class, options={})
+      Process.new build_job(job_class, options), self
     end
 
-    def load_process(id)
-      Process.new self[id], self
+    def load_process(job_key)
+      Process.new self[job_key], self
     end
 
   end
