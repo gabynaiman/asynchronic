@@ -1,11 +1,15 @@
 module LifeCycleExamples
   
-  let(:env) { Asynchronic::Environment.new data_store, queue_engine }
+  let(:env) { Asynchronic::Environment.new queue_engine, data_store }
 
   let(:queue) { env.default_queue }
 
   def execute_work(queue)
     env.load_process(queue.pop).execute
+  end
+
+  def enqueue(process, data={})
+    process.enqueue(data).must_equal process.job.lookup.id
   end
 
   it 'Basic' do
@@ -14,7 +18,7 @@ module LifeCycleExamples
     process.must_be_initialized
     queue.must_be_empty
 
-    process.enqueue input: 1
+    enqueue process, input: 1
 
     process.must_be :queued?
     process.must_have input: 1
@@ -33,7 +37,7 @@ module LifeCycleExamples
     process.must_be_initialized
     queue.must_be_empty
 
-    process.enqueue input: 50
+    enqueue process, input: 50
 
     process.must_be :queued?
     process.processes.must_be_empty
@@ -71,7 +75,7 @@ module LifeCycleExamples
     process.must_be_initialized
     queue.must_be_empty
 
-    process.enqueue input: 100
+    enqueue process, input: 100
 
     process.must_be :queued?
     process.processes.must_be_empty
@@ -125,7 +129,7 @@ module LifeCycleExamples
     process.must_be_initialized
     queue.must_be_empty
 
-    process.enqueue input: 10, times: 3
+    enqueue process, input: 10, times: 3
 
     process.must_be :queued?
     process.processes.must_be_empty
@@ -154,7 +158,7 @@ module LifeCycleExamples
     process.must_be_initialized
     queue.must_be_empty
 
-    process.enqueue input: 4
+    enqueue process, input: 4
 
     process.must_be :queued?
     process.processes.must_be_empty
@@ -192,7 +196,7 @@ module LifeCycleExamples
     process.must_be_initialized
     queue.must_be_empty
 
-    process.enqueue
+    enqueue process
 
     process.must_be :queued?
     process.processes.must_be_empty
@@ -245,7 +249,7 @@ module LifeCycleExamples
     env.queue(:queue_2).must_be_empty
     env.queue(:queue_3).must_be_empty
 
-    process.enqueue input: 'hello'
+    enqueue process, input: 'hello'
 
     process.must_be :queued?
     process.processes.must_be_empty
@@ -282,7 +286,7 @@ module LifeCycleExamples
     process.must_be_initialized
     queue.must_be_empty
 
-    process.enqueue
+    enqueue process
 
     process.must_be :queued?
     queue.must_enqueued process
@@ -300,7 +304,7 @@ module LifeCycleExamples
     process.must_be_initialized
     queue.must_be_empty
 
-    process.enqueue
+    enqueue process
 
     process.must_be :queued?
     queue.must_enqueued process

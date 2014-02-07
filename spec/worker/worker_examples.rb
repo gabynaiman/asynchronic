@@ -1,6 +1,6 @@
 module WorkerExamples
 
-  let(:env) { Asynchronic::Environment.new data_store, queue_engine }
+  let(:env) { Asynchronic::Environment.new queue_engine, data_store }
   let(:queue_name) { :test_worker }
   let(:queue) { env.queue queue_name }
 
@@ -31,9 +31,14 @@ module WorkerExamples
   end
 
   it 'Class usage' do
+    Asynchronic.configure do |config|
+      config.queue_engine = queue_engine
+      config.data_store = data_store
+    end
+
     processes = enqueue_processes
 
-    Asynchronic::Worker.start :test_worker, env do |worker|
+    Asynchronic::Worker.start :test_worker do |worker|
       loop { break if worker.queue.empty? }
       worker.stop 
     end

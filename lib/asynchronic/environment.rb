@@ -1,13 +1,12 @@
 module Asynchronic
   class Environment
 
-    attr_reader :data_store
     attr_reader :queue_engine
+    attr_reader :data_store
     
-    def initialize(data_store, queue_engine)
-      @data_store = data_store
+    def initialize(queue_engine, data_store)
       @queue_engine = queue_engine
-      @default_queue = default_queue
+      @data_store = data_store
     end
 
     def [](key)

@@ -22,8 +22,8 @@ class Asynchronic::Worker
     listener.stop
   end
 
-  def self.start(queue_name, env, &block)
-    worker = new queue_name, env
+  def self.start(queue_name, &block)
+    worker = new queue_name, Asynchronic.environment
     Thread.new { block.call(worker) } if block_given?
     worker.start
   end

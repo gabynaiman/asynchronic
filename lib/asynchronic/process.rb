@@ -30,6 +30,7 @@ module Asynchronic
       merge data
       env.enqueue lookup.id, queue
       update_status :queued
+      lookup.id
     end
 
     def execute

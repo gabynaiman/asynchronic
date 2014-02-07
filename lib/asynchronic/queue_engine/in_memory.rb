@@ -4,8 +4,8 @@ module Asynchronic
 
       attr_reader :default_queue
 
-      def initialize(default_queue=nil)
-        @default_queue = default_queue || :asynchronic
+      def initialize(options={})
+        @default_queue = options.fetch(:default_queue, Asynchronic.default_queue)
         @queues ||= Hash.new { |h,k| h[k] = Queue.new }
       end
 

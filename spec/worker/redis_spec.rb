@@ -7,7 +7,6 @@ describe Asynchronic::Worker, '(Redis)' do
   let(:data_store) { Asynchronic::DataStore::Redis.new }
 
   before do
-    ENV['OST_TIMEOUT'] = '0'
     Redis.current.flushdb
   end
 

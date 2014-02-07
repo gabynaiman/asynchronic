@@ -14,3 +14,9 @@ end
 class Module
   include Minitest::Spec::DSL
 end
+
+class Minitest::Spec
+  before do
+    Asynchronic.restore_default_configuration
+  end
+end
