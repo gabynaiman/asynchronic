@@ -5,7 +5,7 @@ module Asynchronic
       attr_reader :default_queue
 
       def initialize(options={})
-        Ost.connect options[:redis] if options.key?(:redis)
+        ::Ost.connect options[:redis] if options.key?(:redis)
         @default_queue = options.fetch(:default_queue, Asynchronic.default_queue)
         @queues ||= Hash.new { |h,k| h[k] = Queue.new k }
       end
