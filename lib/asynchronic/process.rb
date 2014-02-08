@@ -79,7 +79,6 @@ module Asynchronic
     def processes(name=nil)
       processes = env.data_store.keys(lookup.jobs).
         select { |k| k.match Regexp.new("^#{lookup.jobs[UUID_REGEXP]}$") }.
-        # map { |k| Process.new env[k], env }
         map { |k| env.load_process k }
 
       name ? processes.detect { |p| p.name == name.to_s } : processes
