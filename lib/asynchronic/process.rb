@@ -100,7 +100,7 @@ module Asynchronic
       update_status :waiting
     rescue Exception => ex
       Asynchronic.logger.error('Asynchronic') do
-        "Failed job #{lookup.id} (#{job.class})\n#{ex.message}\n#{ex.backtrace.join("\n")}" 
+        "Failed job #{lookup.id} (#{job.class})\n#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}" 
       end
       abort ex
     end
