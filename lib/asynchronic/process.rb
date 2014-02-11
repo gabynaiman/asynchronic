@@ -44,6 +44,7 @@ module Asynchronic
           abort Error.new "Error caused by #{processes.select(&:aborted?).map{|p| p.job.class}.join(', ')}"
         else
           if processes.all?(&:completed?)
+            Asynchronic.logger.info('Asynchronic') { "Complete #{job.class} - #{lookup.id}" }
             update_status :completed 
           else
             processes.select(&:ready?).each { |p| p.enqueue }
@@ -95,12 +96,13 @@ module Asynchronic
     private
 
     def run
+      Asynchronic.logger.info('Asynchronic') { "Running #{job.class} - #{lookup.id}" }
       update_status :running
       Runtime.evaluate self
       update_status :waiting
     rescue Exception => ex
       Asynchronic.logger.error('Asynchronic') do
-        "Failed job #{lookup.id} (#{job.class})\n#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}" 
+        "Failed job #{job.class} (#{lookup.id})\n#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}" 
       end
       abort ex
     end

@@ -30,6 +30,7 @@ module Asynchronic
     end
 
     def build_job(job_class, options={})
+      Asynchronic.logger.debug('Asynchronic') { "Building job #{job_class} - #{options}" }
       job_class.new(options).tap do |job|
         self[job.lookup.id] = job
       end
