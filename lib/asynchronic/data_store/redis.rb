@@ -9,12 +9,12 @@ module Asynchronic
       end
 
       def get(key)
-        value = connection.get(key)
+        value = connection.get root[key]
         value ? Marshal.load(value) : nil
       end
 
       def set(key, value)
-        connection.set key, Marshal.dump(value)
+        connection.set root[key], Marshal.dump(value)
       end
 
       def merge(key, hash)
@@ -33,15 +33,18 @@ module Asynchronic
       end
 
       def keys(key=nil)
-        key ? connection.keys("#{key}*") : connection.keys
+        keys = key ? connection.keys("#{root[key]}*") : connection.keys
+        keys.map { |k| k[(root.size + 1)..-1] }
       end
 
       def clear(key=nil)
-        if key
-          keys(key).each { |k| connection.del k }
-        else
-          connection.flushdb
-        end
+        keys(key).each { |k| connection.del root[k] }
+      end
+
+      private
+
+      def root
+        Key.new :asynchronic
       end
       
     end

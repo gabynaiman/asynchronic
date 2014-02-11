@@ -10,7 +10,7 @@ module Asynchronic
         if @job.parent 
           DataStore::Key.new(@job.parent)[:jobs][@job.id]
         else
-          DataStore::Key.new(:asynchronic)[:job][@job.id]
+          DataStore::Key.new(:job)[@job.id]
         end
       end
 

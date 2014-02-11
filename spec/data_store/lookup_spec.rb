@@ -8,30 +8,30 @@ describe Asynchronic::DataStore::Lookup do
     let(:lookup) { Asynchronic::DataStore::Lookup.new job }
 
     it 'Id' do
-      lookup.id.must_equal "asynchronic:job:#{job.id}"
+      lookup.id.must_equal "job:#{job.id}"
     end
 
     it 'Status' do
-      lookup.status.must_equal "asynchronic:job:#{job.id}:status"
+      lookup.status.must_equal "job:#{job.id}:status"
     end
 
     it 'Data' do
-      lookup.data.must_equal "asynchronic:job:#{job.id}:data"
+      lookup.data.must_equal "job:#{job.id}:data"
     end
 
     it 'Jobs' do
-      lookup.jobs.must_equal "asynchronic:job:#{job.id}:jobs"
+      lookup.jobs.must_equal "job:#{job.id}:jobs"
     end
 
     it 'Error' do
-      lookup.error.must_equal "asynchronic:job:#{job.id}:error"
+      lookup.error.must_equal "job:#{job.id}:error"
     end
 
   end
 
   describe 'Two levels' do
 
-    let(:parent) { "asynchronic:job:#{SecureRandom.uuid}" }
+    let(:parent) { "job:#{SecureRandom.uuid}" }
     let(:job) { Asynchronic::Job.new parent: parent }
     let(:lookup) { Asynchronic::DataStore::Lookup.new job }
 

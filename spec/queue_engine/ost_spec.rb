@@ -7,7 +7,7 @@ describe Asynchronic::QueueEngine::Ost do
   let(:listener) { Asynchronic::QueueEngine::Ost::Listener.new }
 
   before do
-    Redis.current.flushdb
+    engine.clear
   end
   
   include QueueEngineExamples

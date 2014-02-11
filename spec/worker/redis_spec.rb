@@ -7,7 +7,8 @@ describe Asynchronic::Worker, '(Redis)' do
   let(:data_store) { Asynchronic::DataStore::Redis.new }
 
   before do
-    Redis.current.flushdb
+    data_store.clear
+    queue_engine.clear
   end
 
   include WorkerExamples

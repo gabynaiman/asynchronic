@@ -6,7 +6,7 @@ describe Asynchronic::DataStore::Redis do
   let(:data_store) { Asynchronic::DataStore::Redis.new }
 
   before do
-    Redis.current.flushdb
+    data_store.clear
   end
 
   include DataStoreExamples
