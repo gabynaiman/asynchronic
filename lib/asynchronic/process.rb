@@ -120,7 +120,6 @@ module Asynchronic
     private
 
     def run
-      Asynchronic.logger.info('Asynchronic') { "Running #{job.class} - #{lookup.id}" }
       update_status :running
       Runtime.evaluate self
       update_status :waiting
@@ -132,6 +131,7 @@ module Asynchronic
     end
 
     def update_status(status)
+      Asynchronic.logger.info('Asynchronic') { "#{status.to_s.capitalize} #{job.class} - #{lookup.id}" }
       env[lookup.status] = status
       env[lookup.send(TIME_TRACKING_MAP[status])] = Time.now if TIME_TRACKING_MAP.key? status
     end
