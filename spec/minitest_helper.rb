@@ -21,4 +21,9 @@ class Minitest::Spec
   before do
     Asynchronic.restore_default_configuration
   end
+
+  after do
+    Asynchronic::DataStore::Redis.new.clear
+    Asynchronic::QueueEngine::Ost.new.clear
+  end
 end
