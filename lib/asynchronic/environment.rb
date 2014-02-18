@@ -41,8 +41,8 @@ module Asynchronic
       Process.new build_job(job_class, options), self
     end
 
-    def load_process(job_key)
-      Process.new self[job_key], self
+    def load_process(pid)
+      Process.new self[pid], self
     end
 
   end

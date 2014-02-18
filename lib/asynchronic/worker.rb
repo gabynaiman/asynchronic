@@ -19,8 +19,8 @@ class Asynchronic::Worker
       stop
     end
     
-    listener.listen(queue) do |job_key|
-      env.load_process(job_key).execute
+    listener.listen(queue) do |pid|
+      env.load_process(pid).execute
     end
   end
 

@@ -20,9 +20,8 @@ module Asynchronic
     Environment.new queue_engine, data_store
   end
 
-  def self.enqueue(job_class, data={})
-    process = environment.build_process job_class
-    process.enqueue data
+  def self.[](pid)
+    environment.load_process pid
   end
 
 end

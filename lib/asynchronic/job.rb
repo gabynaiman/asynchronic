@@ -31,6 +31,11 @@ module Asynchronic
       @implementation
     end
 
+    def self.enqueue(data={})
+      process = Asynchronic.environment.build_process self
+      process.enqueue data
+    end
+
     private
 
     def self.define(&block)

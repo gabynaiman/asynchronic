@@ -25,13 +25,22 @@ describe Asynchronic, 'Facade' do
     end
   end
 
-  it 'Enqueue' do
-    job_key = Asynchronic.enqueue BasicJob, input: 100
-    env = Asynchronic.environment
+  it 'Load process' do
+    process = Asynchronic.environment.build_process BasicJob
+    Asynchronic[process.pid].tap do |p|
+      p.pid.must_equal process.pid
+      p.job.must_equal process.job
+    end
+  end
 
-    env.default_queue.to_a.must_equal [job_key]
-    env[job_key].must_be_instance_of BasicJob
-    env.load_process(job_key)[:input].must_equal 100
+  it 'Enqueue' do
+    pid = BasicJob.enqueue input: 100
+    
+    Asynchronic.environment.tap do |env|
+      env.default_queue.to_a.must_equal [pid]
+      env[pid].must_be_instance_of BasicJob
+      env.load_process(pid)[:input].must_equal 100
+    end
   end
 
 end

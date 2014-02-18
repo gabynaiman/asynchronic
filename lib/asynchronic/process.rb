@@ -25,6 +25,10 @@ module Asynchronic
       @env = env
     end
 
+    def pid
+      lookup.id
+    end
+
     def data
       parent ? parent.data : env.data_store.to_hash(lookup.data).with_indiferent_access
     end
