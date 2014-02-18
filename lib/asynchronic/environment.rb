@@ -33,6 +33,7 @@ module Asynchronic
       Asynchronic.logger.debug('Asynchronic') { "Building job #{job_class} - #{options}" }
       job_class.new(options).tap do |job|
         self[job.lookup.id] = job
+        self[job.lookup.created_at] = Time.now
       end
     end
 

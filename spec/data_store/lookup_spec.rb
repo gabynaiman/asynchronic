@@ -27,6 +27,22 @@ describe Asynchronic::DataStore::Lookup do
       lookup.error.must_equal "job:#{job.id}:error"
     end
 
+    it 'Created At' do
+      lookup.created_at.must_equal "job:#{job.id}:created_at"
+    end
+
+    it 'Queued At' do
+      lookup.queued_at.must_equal "job:#{job.id}:queued_at"
+    end
+
+    it 'Started At' do
+      lookup.started_at.must_equal "job:#{job.id}:started_at"
+    end
+
+    it 'Finalized At' do
+      lookup.finalized_at.must_equal "job:#{job.id}:finalized_at"
+    end
+
   end
 
   describe 'Two levels' do
@@ -53,6 +69,22 @@ describe Asynchronic::DataStore::Lookup do
 
     it 'Error' do
       lookup.error.must_equal "#{parent}:jobs:#{job.id}:error"
+    end
+
+    it 'Created At' do
+      lookup.created_at.must_equal "#{parent}:jobs:#{job.id}:created_at"
+    end
+
+    it 'Queued At' do
+      lookup.queued_at.must_equal "#{parent}:jobs:#{job.id}:queued_at"
+    end
+
+    it 'Started At' do
+      lookup.started_at.must_equal "#{parent}:jobs:#{job.id}:started_at"
+    end
+
+    it 'Finalized At' do
+      lookup.finalized_at.must_equal "#{parent}:jobs:#{job.id}:finalized_at"
     end
 
   end

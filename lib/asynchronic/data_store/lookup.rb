@@ -2,6 +2,8 @@ module Asynchronic
   module DataStore
     class Lookup
 
+      KEYS = [:status, :data, :jobs, :error, :created_at, :queued_at, :started_at, :finalized_at]
+
       def initialize(job)
         @job = job
       end
@@ -14,20 +16,10 @@ module Asynchronic
         end
       end
 
-      def status
-        id[:status]
-      end
-
-      def data
-        id[:data]
-      end
-
-      def jobs
-        id[:jobs]
-      end
-
-      def error
-        id[:error]
+      KEYS.each do |key|
+        define_method key do
+          id[key]
+        end
       end
 
     end

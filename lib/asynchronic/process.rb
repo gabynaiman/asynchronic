@@ -3,6 +3,13 @@ module Asynchronic
 
     STATUSES = [:pending, :queued, :running, :waiting, :completed, :aborted]
 
+    TIME_TRACKING_MAP = {
+      queued: :queued_at,
+      running: :started_at,
+      completed: :finalized_at,
+      aborted: :finalized_at
+    }
+
     UUID_REGEXP = '[a-z\d]{8}-[a-z\d]{4}-[a-z\d]{4}-[a-z\d]{4}-[a-z\d]{12}'
 
     extend Forwardable
@@ -30,6 +37,7 @@ module Asynchronic
       merge data
       env.enqueue lookup.id, queue
       update_status :queued
+
       lookup.id
     end
 
@@ -93,6 +101,22 @@ module Asynchronic
       @dependencies ||= parent.processes.select { |p| job.dependencies.include? p.name }
     end
 
+    def created_at
+      env[lookup.created_at]
+    end
+
+    def queued_at
+      env[lookup.queued_at]
+    end
+
+    def started_at
+      env[lookup.started_at]
+    end
+
+    def finalized_at
+      env[lookup.finalized_at]
+    end
+
     private
 
     def run
@@ -109,6 +133,7 @@ module Asynchronic
 
     def update_status(status)
       env[lookup.status] = status
+      env[lookup.send(TIME_TRACKING_MAP[status])] = Time.now if TIME_TRACKING_MAP.key? status
     end
 
     def abort(exception)
