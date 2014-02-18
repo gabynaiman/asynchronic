@@ -6,7 +6,6 @@ class Asynchronic::Worker
   attr_reader :listener
 
   def initialize(queue_name, env)
-    Asynchronic.logger.info('Asynchronic') { "Starting worker of #{queue_name} (#{Process.pid})" }
     @queue_name = queue_name
     @queue = env.queue_engine[queue_name]
     @env = env
@@ -14,10 +13,9 @@ class Asynchronic::Worker
   end
 
   def start
-    Signal.trap('INT') do
-      Asynchronic.logger.info('Asynchronic') { "Stopping worker of #{@queue_name} (#{Process.pid})" }
-      stop
-    end
+    Asynchronic.logger.info('Asynchronic') { "Starting worker of #{queue_name} (#{Process.pid})" }
+
+    Signal.trap('INT') { stop }
     
     listener.listen(queue) do |pid|
       env.load_process(pid).execute
@@ -25,6 +23,7 @@ class Asynchronic::Worker
   end
 
   def stop
+    Asynchronic.logger.info('Asynchronic') { "Stopping worker of #{@queue_name} (#{Process.pid})" }
     listener.stop
   end
 
