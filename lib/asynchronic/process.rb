@@ -10,8 +10,6 @@ module Asynchronic
       aborted: :finalized_at
     }
 
-    UUID_REGEXP = '[a-z\d]{8}-[a-z\d]{4}-[a-z\d]{4}-[a-z\d]{4}-[a-z\d]{12}'
-
     extend Forwardable
 
     def_delegators :job, :id, :name, :queue
@@ -90,7 +88,7 @@ module Asynchronic
 
     def processes(name=nil)
       processes = env.data_store.keys(lookup.jobs).
-        select { |k| k.match Regexp.new("^#{lookup.jobs[UUID_REGEXP]}$") }.
+        select { |k| k.match Regexp.new("^#{lookup.jobs[Asynchronic::UUID_REGEXP]}$") }.
         map { |k| env.load_process k }
 
       name ? processes.detect { |p| p.name == name.to_s } : processes

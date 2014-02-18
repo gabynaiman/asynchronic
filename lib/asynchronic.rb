@@ -9,6 +9,8 @@ Dir.glob(File.expand_path('asynchronic/**/*.rb', File.dirname(__FILE__))).sort.e
 
 module Asynchronic
 
+  UUID_REGEXP = '[a-z\d]{8}-[a-z\d]{4}-[a-z\d]{4}-[a-z\d]{4}-[a-z\d]{12}'
+
   extend ClassConfig
 
   attr_config :default_queue, :asynchronic
@@ -22,6 +24,10 @@ module Asynchronic
 
   def self.[](pid)
     environment.load_process pid
+  end
+
+  def self.processes
+    environment.processes
   end
 
 end

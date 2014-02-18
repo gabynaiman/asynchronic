@@ -1,6 +1,11 @@
 require 'minitest_helper'
 
 describe Asynchronic, 'Facade' do
+
+  before do
+    Asynchronic.environment.data_store.clear
+    Asynchronic.environment.queue_engine.clear
+  end
   
   it 'Default queue' do
     Asynchronic.default_queue.must_equal :asynchronic
@@ -31,6 +36,16 @@ describe Asynchronic, 'Facade' do
       p.pid.must_equal process.pid
       p.job.must_equal process.job
     end
+  end
+
+  it 'List processes' do
+    pids = 3.times.map do 
+      process = Asynchronic.environment.build_process SequentialJob
+      process.pid
+    end
+
+    Asynchronic.processes.count.must_equal 3
+    Asynchronic.processes.map(&:pid).each { |pid| pids.must_include pid }
   end
 
   it 'Enqueue' do
