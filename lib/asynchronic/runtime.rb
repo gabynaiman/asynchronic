@@ -8,10 +8,13 @@ module Asynchronic
     end
 
     def evaluate
-      @data = process.data
-      process.job.local.each { |k,v| define_singleton_method(k) { v } }
-      instance_eval &process.job.class.implementation
-      process.merge @data
+      begin
+        @data = process.data
+        process.job.local.each { |k,v| define_singleton_method(k) { v } }
+        instance_eval &process.job.class.implementation
+      ensure
+        process.merge @data
+      end
     end
 
     def self.evaluate(process)
