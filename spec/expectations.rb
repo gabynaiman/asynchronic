@@ -2,7 +2,7 @@ module MiniTest::Assertions
 
   def assert_enqueued(expected_processes, queue)
     messages = Array(expected_processes).map { |p| p.job.lookup.id }
-    queue.to_a.sort.must_equal messages.sort, "Jobs #{Array(expected_processes).map{ |p| p.job.class }}"
+    queue.to_a.sort.must_equal messages.sort, "Jobs #{Array(expected_processes).map{ |p| p.job.name }}"
   end
 
   def assert_have(expected_hash, process)

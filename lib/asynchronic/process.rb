@@ -51,7 +51,7 @@ module Asynchronic
     def wakeup
       if waiting?
         if processes.any?(&:aborted?)
-          abort Error.new "Error caused by #{processes.select(&:aborted?).map{|p| p.job.class}.join(', ')}"
+          abort Error.new "Error caused by #{processes.select(&:aborted?).map{|p| p.job.name}.join(', ')}"
         else
           if processes.all?(&:completed?)
             update_status :completed 
@@ -125,13 +125,13 @@ module Asynchronic
       Runtime.evaluate self
       update_status :waiting
     rescue Exception => ex
-      message = "Failed job #{job.class} (#{lookup.id})\n#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
+      message = "Failed job #{job.name} (#{lookup.id})\n#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
       Asynchronic.logger.error('Asynchronic') { message }
       abort ex
     end
 
     def update_status(status)
-      Asynchronic.logger.info('Asynchronic') { "#{status.to_s.capitalize} #{job.class} - #{lookup.id}" }
+      Asynchronic.logger.info('Asynchronic') { "#{status.to_s.capitalize} #{job.name} - #{lookup.id}" }
       env[lookup.status] = status
       env[lookup.send(TIME_TRACKING_MAP[status])] = Time.now if TIME_TRACKING_MAP.key? status
     end
