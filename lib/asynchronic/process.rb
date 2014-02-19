@@ -131,7 +131,7 @@ module Asynchronic
     end
 
     def update_status(status)
-      Asynchronic.logger.info('Asynchronic') { "#{status.to_s.capitalize} #{job.name} - #{lookup.id}" }
+      Asynchronic.logger.info('Asynchronic') { "#{status.to_s.capitalize} #{job.name} (#{lookup.id})" }
       env[lookup.status] = status
       env[lookup.send(TIME_TRACKING_MAP[status])] = Time.now if TIME_TRACKING_MAP.key? status
     end
