@@ -11,6 +11,9 @@ module Asynchronic
       def get(key)
         value = connection.get root[key]
         value ? Marshal.load(value) : nil
+      rescue => ex
+        Asynchronic.logger.warn('Asynchronic') { ex.message }
+        value
       end
 
       def set(key, value)
