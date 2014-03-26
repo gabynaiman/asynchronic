@@ -1,45 +1,26 @@
 module Asynchronic
   class Job
 
-    attr_reader :id
-    attr_reader :name
-    attr_reader :queue
-    attr_reader :parent
-    attr_reader :dependencies
-    attr_reader :local
-
-    def initialize(options={})
-      @id = SecureRandom.uuid
-      @name = options.key?(:alias) ? options[:alias].to_s : self.class.to_s
-      @queue = options[:queue] || self.class.queue
-      @parent = options[:parent]
-      @dependencies = Array(options[:dependencies] || options[:dependency]).map(&:to_s)
-      @local = options[:local] || {}
-
-      raise 'Cant have dependencies without parent job' if dependencies.any? && parent.nil?
+    def initialize(process)
+      @process = process
     end
 
-    def lookup
-      DataStore::Lookup.new self
+    def params
+      @process.params
     end
 
-    def self.queue(queue=nil)
-      queue ? @queue = queue : @queue
+    def data
+      @process.data
     end
 
-    def self.implementation
-      @implementation
-    end
-
-    def self.enqueue(data={})
-      process = Asynchronic.environment.build_process self
-      process.enqueue data
+    def processes
+      @process.processes
     end
 
     private
 
-    def self.define(&block)
-      @implementation = block
+    def async(type, params={})
+      @process.create_child(type, params).tap(&:enqueue)
     end
 
   end
