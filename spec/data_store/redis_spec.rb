@@ -1,5 +1,6 @@
 require 'minitest_helper'
 require_relative './data_store_examples'
+require_relative './lazy_value_examples'
 
 describe Asynchronic::DataStore::Redis do
 
@@ -21,6 +22,10 @@ describe Asynchronic::DataStore::Redis do
 
     data_store.get(:class).must_be_instance_of String
     data_store.get(:instance).must_be_instance_of String
+  end
+
+  describe 'LazyValue' do
+    include LazyValueExamples
   end
 
 end
