@@ -6,17 +6,17 @@ module Asynchronic
                        each   { |m| undef_method m }
 
       def initialize(data_store, key)
-        @__data_store__ = data_store
-        @__key__ = key
+        @data_store = data_store
+        @key = key
       end
 
       def reload
-        @__value__ = nil
+        @value = nil
         self
       end
 
       def inspect
-        "#<Asynchronic::DataStore::LazyValue data_store=#{@__data_store__.class}, key='#{@__key__}'>"
+        "#<Asynchronic::DataStore::LazyValue data_store=#{@data_store.class}, key='#{@key}'>"
       end
 
       private
@@ -26,7 +26,7 @@ module Asynchronic
       end
 
       def __value__
-        @__value__ ||= @__data_store__.get(@__key__)
+        @value ||= @data_store[@key]
       end
 
     end

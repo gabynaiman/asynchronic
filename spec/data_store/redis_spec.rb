@@ -15,13 +15,13 @@ describe Asynchronic::DataStore::Redis do
   it 'Safe deserialization' do
     SampleClass = Class.new
 
-    data_store.set :class, SampleClass
-    data_store.set :instance, SampleClass.new
+    data_store[:class] =  SampleClass
+    data_store[:instance] =  SampleClass.new
 
     Object.send :remove_const, :SampleClass
 
-    data_store.get(:class).must_be_instance_of String
-    data_store.get(:instance).must_be_instance_of String
+    data_store[:class].must_be_instance_of String
+    data_store[:instance].must_be_instance_of String
   end
 
   describe 'LazyValue' do

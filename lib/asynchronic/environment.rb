@@ -10,11 +10,11 @@ module Asynchronic
     end
 
     def [](key)
-      data_store.get key
+      data_store[key]
     end
 
     def []=(key, value)
-      data_store.set key, value
+      data_store[key] = value
     end
 
     def queue(name)

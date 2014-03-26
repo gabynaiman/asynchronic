@@ -9,11 +9,11 @@ module Asynchronic
         @mutex = Mutex.new
       end
 
-      def get(key)
+      def [](key)
         @hash[key.to_s]
       end
 
-      def set(key, value)
+      def []=(key, value)
         @mutex.synchronize { @hash[key.to_s] = value }
       end
 

@@ -8,7 +8,7 @@ module Asynchronic
         @connection = ::Redis.new *args
       end
 
-      def get(key)
+      def [](key)
         value = @connection.get root[key]
         value ? Marshal.load(value) : nil
       rescue => ex
@@ -16,7 +16,7 @@ module Asynchronic
         value
       end
 
-      def set(key, value)
+      def []=(key, value)
         @connection.set root[key], Marshal.dump(value)
       end
 
