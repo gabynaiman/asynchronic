@@ -7,29 +7,24 @@ module Asynchronic
       def initialize(data_store, scope)
         @data_store = data_store
         @scope = Key.new scope
-        @readonly = false
       end
 
       def [](key)
-        LazyValue.new @data_store, @scope[key]
+        @data_store[@scope[key]]
       end
 
       def []=(key, value)
-        raise "Can't modify read only ScopedStore ['#{@scope}|#{key}' => #{value}]" if @readonly
         @data_store[@scope[key]] = value
       end
 
-      def keys(key=nil)
-        @data_store.keys key ? @scope[key] : @scope
+      def delete(key)
+        @data_store.delete @scope[key]
       end
 
-      def clear(key=nil)
-        @data_store.clear key ? @scope[key] : @scope
-      end
-
-      def readonly
-        @readonly = true
-        self
+      def keys
+        @data_store.keys.
+          select { |k| k.start_with? @scope[''] }.
+          map { |k| k[@scope[''].size..-1] }
       end
 
     end

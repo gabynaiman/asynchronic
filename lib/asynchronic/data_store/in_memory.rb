@@ -17,16 +17,12 @@ module Asynchronic
         @mutex.synchronize { @hash[key.to_s] = value }
       end
 
-      def keys(key=nil)
-        key ? keys.select { |k| k.start_with? key.to_s } : @hash.keys
+      def delete(key)
+        @hash.delete key.to_s
       end
 
-      def clear(key=nil)
-        if key
-          @hash.delete_if { |k,v| k.start_with? key.to_s }
-        else
-          @hash.clear
-        end
+      def keys
+        @hash.keys
       end
 
     end

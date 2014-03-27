@@ -1,8 +1,8 @@
 require 'coverage_helper'
+require 'asynchronic'
 require 'minitest/autorun'
 require 'minitest/great_expectations'
 require 'turn'
-require 'asynchronic'
 require 'jobs'
 require 'expectations'
 
@@ -25,5 +25,14 @@ class Minitest::Spec
   after do
     Asynchronic::DataStore::Redis.new.clear
     Asynchronic::QueueEngine::Ost.new.clear
+  end
+end
+
+module Asynchronic::DataStore::Helper
+  def dump
+    puts 'DataStore:'
+    each do |k,v|
+      puts "#{k}: #{v}"
+    end
   end
 end

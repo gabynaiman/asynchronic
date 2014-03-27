@@ -2,19 +2,39 @@ module Asynchronic
   module DataStore
     module Helper
 
-      def merge(key, hash)
-        scoped_key = Key.new key
-        hash.each do |k,v|
-          self[scoped_key[k]] = v
-        end
+      include Enumerable
+
+      def each
+        keys.each { |k| yield [k, self[k]] }
+        nil
       end
 
-      def to_hash(key)
-        children_key = "#{key}#{Key::SEPARATOR}"
-        keys(children_key).inject(HashWithIndiferentAccess.new) do |hash, k|
-          hash[k[children_key.size..-1]] = self[k]
-          hash
-        end
+      def merge(hash)
+        hash.each { |k,v| self[k] = v }
+      end
+
+      def clear
+        keys.each { |k| delete k }
+      end
+
+      def scoped(key)
+        ScopedStore.new self, key
+      end
+
+      def readonly?
+        false
+      end
+
+      def readonly
+        ReadonlyStore.new self
+      end
+
+      def lazy?
+        false
+      end
+
+      def lazy
+        LazyStore.new self
       end
 
     end

@@ -9,7 +9,7 @@ module Asynchronic
       end
 
       def [](key)
-        value = @connection.get root[key]
+        value = @connection.get key.to_s
         value ? Marshal.load(value) : nil
       rescue => ex
         Asynchronic.logger.warn('Asynchronic') { ex.message }
@@ -17,22 +17,15 @@ module Asynchronic
       end
 
       def []=(key, value)
-        @connection.set root[key], Marshal.dump(value)
+        @connection.set key.to_s, Marshal.dump(value)
       end
 
-      def keys(key=nil)
-        keys = key ? @connection.keys("#{root[key]}*") : @connection.keys
-        keys.map { |k| k[(root.size + 1)..-1] }
+      def delete(key)
+        @connection.del key.to_s
       end
 
-      def clear(key=nil)
-        keys(key).each { |k| @connection.del root[k] }
-      end
-
-      private
-
-      def root
-        Key.new :asynchronic
+      def keys
+        @connection.keys
       end
       
     end

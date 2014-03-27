@@ -27,10 +27,7 @@ module LazyValueExamples
     value = lazy_value :key
     data_store[:key] =  1
     value.must_be_instance_of Fixnum
-  end
-
-  it 'Inspect' do
-    lazy_value(:key).inspect.must_equal "#<Asynchronic::DataStore::LazyValue data_store=#{data_store.class}, key='key'>"
+    value.must_equal 1
   end
 
 end
