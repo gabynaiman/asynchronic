@@ -9,18 +9,18 @@ module Asynchronic
       @process.params
     end
 
-    def data
-      @process.data
+    def result(reference)
+      @process.processes(reference).result
     end
 
-    def processes
-      @process.processes
+    def self.queue(name=nil)
+      name ? @queue = name : @queue
     end
 
     private
 
     def async(type, params={})
-      @process.create_child(type, params).tap(&:enqueue)
+      @process.nest type, params
     end
 
   end

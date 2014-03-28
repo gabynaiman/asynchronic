@@ -1,197 +1,168 @@
 module Asynchronic
   class Process
 
+    STATUSES = [:pending, :queued, :running, :waiting, :completed, :aborted]
+
+    TIME_TRACKING_MAP = {
+      pending: :created_at,
+      queued: :queued_at,
+      running: :started_at,
+      completed: :finalized_at,
+      aborted: :finalized_at
+    }
+
+    ATTRIBUTE_NAMES = [:type, :queue, :status, :dependencies, :result, :error] | TIME_TRACKING_MAP.values.uniq
+
     attr_reader :id
 
-    def initialize(environment, id)
+    def initialize(environment, id, &block)
       @environment = environment
-      @id = Asynchronic::DataStore::Key.new id
+      @id = DataStore::Key.new id
+      instance_eval &block if block_given?
+    end
+
+    ATTRIBUTE_NAMES.each do |attribute|
+      define_method attribute do
+        data_store[attribute]
+      end
+    end
+
+    STATUSES.each do |status|
+      define_method "#{status}?" do
+        self.status == status
+      end
+    end
+
+    def ready?
+      pending? && dependencies.all?(&:completed?)
+    end
+
+    def finalized?
+      completed? || aborted?
+    end
+
+    def params
+      data_store.scoped(:params).readonly
+    end
+
+    def result
+      data_store.lazy[:result]
     end
 
     def job
       type.new self
     end
 
-    def type
-      @environment[id[:type]]
-    end
-
-    def params
-      Asynchronic::DataStore::ScopedStore.new(@environment.data_store, id[:params]).readonly
-    end
-
-    def data
-      Asynchronic::DataStore::ScopedStore.new @environment.data_store, id[:data]
-    end
-
-    def children
-      @environment.data_store.keys(id[:children]).
-        map { |k| Asynchronic::DataStore::Key.new k }.
-        select { |k| k.sections.count == id[:children].sections.count + 2 && k.match(/type$/) }.
+    def processes(name=nil)
+      index = data_store.scoped(:processes).keys.
+        select { |k| k.sections.count == 2 && k.match(/type$/) }.
         inject(HashWithIndiferentAccess.new) do |hash, key|
-          name = Object.const_get(key.sections[-2]) rescue key.sections[-2]
-          hash[name] = Process.new @environment, id[:children][name]
+          reference = Object.const_get(key.sections.first) rescue key.sections.first
+          hash[reference] = Process.new environment, id[:processes][reference]
           hash
         end
+
+      name ? index[name] : index.values
+    end
+
+    def parent
+      Process.new environment, id.remove_last(2) if id.nested?
+    end
+
+    def dependencies
+      return [] unless parent
+      data_store[:dependencies].map { |d| parent.processes d }
     end
 
     def enqueue
-      @environment.enqueue id
+      environment.enqueue id, queue || type.queue
+      queued!
     end
 
-    def create_child(type, params={})
+    def execute
+      run
+      wakeup
+    end
+
+    def wakeup
+      if waiting?
+        if processes.any?(&:aborted?)
+          abort! Error.new "Error caused by #{processes.select(&:aborted?).map{|p| p.id.sections.last}.join(', ')}"
+        elsif processes.all?(&:completed?)
+          completed!
+        else
+          processes.select(&:ready?).each(&:enqueue)
+        end
+      end
+
+      parent.wakeup if parent && finalized?
+    end
+
+    def nest(type, params={})
       name = params.delete(:name) || type
-      pid = id[:children][name]
-      ProcessBuilder.build @environment, type, params.merge(pid: pid)
+      self.class.create @environment, type, params.merge(id: id[:processes][name])
     end
 
     def self.create(environment, type, params={})
-      ProcessBuilder.build environment, type, params
+      id = params.delete(:id) || SecureRandom.uuid
+
+      Asynchronic.logger.debug('Asynchronic') { "Created process #{type} - #{id} - #{params}" }
+
+      new(environment, id) do
+        self.type = type
+        self.queue = params.delete :queue
+        self.dependencies = Array(params.delete(:dependencies)) | Array(params.delete(:dependency))
+        self.params = params
+        pending!
+      end
     end
 
-    # STATUSES = [:pending, :queued, :running, :waiting, :completed, :aborted]
+    private
 
-    # TIME_TRACKING_MAP = {
-    #   queued: :queued_at,
-    #   running: :started_at,
-    #   completed: :finalized_at,
-    #   aborted: :finalized_at
-    # }
+    def environment
+      @environment
+    end
 
-    # extend Forwardable
+    def data_store
+      @data_store ||= environment.data_store.scoped id
+    end
 
-    # def_delegators :job, :id, :name, :queue
-    # def_delegators :data, :[]
+    ATTRIBUTE_NAMES.each do |attribute|
+      define_method "#{attribute}=" do |value|
+        data_store[attribute] = value
+      end
+    end
 
-    # attr_reader :job
-    # attr_reader :env
+    def params=(params)
+      data_store.scoped(:params).merge params
+    end
 
-    # def initialize(job, env)
-    #   @job = job
-    #   @env = env
-    # end
+    def status=(status)
+      Asynchronic.logger.info('Asynchronic') { "#{status.to_s.capitalize} #{type} (#{id})" }
+      data_store[:status] = status
+      data_store[TIME_TRACKING_MAP[status]] = Time.now if TIME_TRACKING_MAP.key? status
+    end
 
-    # def pid
-    #   lookup.id
-    # end
+    STATUSES.each do |status|
+      define_method "#{status}!" do
+        self.status = status
+      end
+    end
 
-    # def data
-    #   parent ? parent.data : env.data_store.to_hash(lookup.data).with_indiferent_access
-    # end
+    def abort!(exception)
+      self.error = Error.new exception
+      aborted!
+    end
 
-    # def merge(data)
-    #   parent ? parent.merge(data) : env.data_store.merge(lookup.data, data)
-    # end
-
-    # def enqueue(data={})
-    #   merge data
-    #   env.enqueue lookup.id, queue
-    #   update_status :queued
-
-    #   lookup.id
-    # end
-
-    # def execute
-    #   run
-    #   wakeup
-    # end
-
-    # def wakeup
-    #   if waiting?
-    #     if processes.any?(&:aborted?)
-    #       abort Error.new "Error caused by #{processes.select(&:aborted?).map{|p| p.job.name}.join(', ')}"
-    #     else
-    #       if processes.all?(&:completed?)
-    #         update_status :completed 
-    #       else
-    #         processes.select(&:ready?).each { |p| p.enqueue }
-    #       end
-    #     end
-    #   end
-
-    #   parent.wakeup if parent && finalized?
-    # end
-
-    # def error
-    #   env[lookup.error]
-    # end
-
-    # def status
-    #   env[lookup.status] || :pending
-    # end
-
-    # STATUSES.each do |status|
-    #   define_method "#{status}?" do
-    #     self.status == status
-    #   end
-    # end
-
-    # def ready?
-    #   pending? && dependencies.all?(&:completed?)
-    # end
-
-    # def finalized?
-    #   completed? || aborted?
-    # end
-
-    # def processes(name=nil)
-    #   processes = env.data_store.keys(lookup.jobs).
-    #     select { |k| k.match Regexp.new("^#{lookup.jobs[Asynchronic::UUID_REGEXP]}$") }.
-    #     map { |k| env.load_process k }
-
-    #   name ? processes.detect { |p| p.name == name.to_s } : processes
-    # end
-
-    # def parent
-    #   @parent ||= Process.new env[job.parent], env if job.parent
-    # end
-
-    # def dependencies
-    #   @dependencies ||= parent.processes.select { |p| job.dependencies.include? p.name }
-    # end
-
-    # def created_at
-    #   env[lookup.created_at]
-    # end
-
-    # def queued_at
-    #   env[lookup.queued_at]
-    # end
-
-    # def started_at
-    #   env[lookup.started_at]
-    # end
-
-    # def finalized_at
-    #   env[lookup.finalized_at]
-    # end
-
-    # private
-
-    # def run
-    #   update_status :running
-    #   Runtime.evaluate self
-    #   update_status :waiting
-    # rescue Exception => ex
-    #   message = "Failed job #{job.name} (#{lookup.id})\n#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
-    #   Asynchronic.logger.error('Asynchronic') { message }
-    #   abort ex
-    # end
-
-    # def update_status(status)
-    #   Asynchronic.logger.info('Asynchronic') { "#{status.to_s.capitalize} #{job.name} (#{lookup.id})" }
-    #   env[lookup.status] = status
-    #   env[lookup.send(TIME_TRACKING_MAP[status])] = Time.now if TIME_TRACKING_MAP.key? status
-    # end
-
-    # def abort(exception)
-    #   env[lookup.error] = Error.new(exception)
-    #   update_status :aborted
-    # end
-
-    # def lookup
-    #   @lookup ||= job.lookup
-    # end
+    def run
+      running!
+      self.result = job.call
+      waiting!
+    rescue Exception => ex
+      message = "Failed process #{type} (#{id})\n#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
+      Asynchronic.logger.error('Asynchronic') { message }
+      abort! ex
+    end
 
   end
 end

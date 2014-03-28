@@ -8,9 +8,12 @@ end
 class SequentialJob < Asynchronic::Job
 
   def call
-    async Step1
+    async Step1, input: params[:input]
+    
     async Step2, dependency: Step1, 
                  input: result(Step1)
+
+    result Step2
   end
 
   class Step1 < Asynchronic::Job
