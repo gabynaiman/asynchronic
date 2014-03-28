@@ -29,13 +29,9 @@ module Asynchronic
       Process.new self, id
     end
     
-    # def processes
-    #   data_store.keys.
-    #     select { |k| k.match Regexp.new("job:#{Asynchronic::UUID_REGEXP}:created_at$") }.
-    #     sort_by {|k| data_store.get k }.
-    #     reverse.
-    #     map { |k| load_process k.gsub(':created_at', '') }
-    # end
+    def processes
+      Process.all self
+    end
 
   end
 end

@@ -93,12 +93,14 @@ end
 
 class NestedJob < Asynchronic::Job
   def call
-    async Level1
+    async Level1, input: params[:input]
+    result Level1
   end
 
   class Level1 < Asynchronic::Job
     def call
-      async Level2, input: params[:input] += 1
+      async Level2, input: params[:input] + 1
+      result Level2
     end
 
     class Level2 < Asynchronic::Job
@@ -130,7 +132,7 @@ class DependencyAliasJob < Asynchronic::Job
 
   class Write < Asynchronic::Job
     def call
-      [params[:prefix], params[:text]].join(' ')
+      [params[:prefix], params[:text]].compact.join(' ')
     end
   end
 end

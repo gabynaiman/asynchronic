@@ -30,4 +30,9 @@ module LazyValueExamples
     value.must_equal 1
   end
 
+  it 'Inspect' do
+    value = lazy_value :key
+    value.inspect.must_match /#<Asynchronic::DataStore::LazyValue @data_store_class=.+ @data_store_connection=.+ @key=key>/
+  end
+
 end

@@ -27,6 +27,19 @@ module Asynchronic
           map { |k| Key.new(k).remove_first @scope.sections.count }
       end
 
+      def connection
+        {
+          data_store_class: @data_store.class,
+          data_store_connection: @data_store.connection,
+          scope: @scope
+        }
+      end
+
+      def self.connect(options)
+        data_store = options[:data_store_class].connect options[:data_store_connection]
+        new data_store, options[:scope]
+      end
+
       def to_s
         "#<#{self.class} @data_store=#{@data_store} @scope=#{@scope}>"
       end

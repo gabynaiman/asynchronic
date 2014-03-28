@@ -4,9 +4,10 @@ module Asynchronic
 
       include Helper
 
-      def initialize
+      def initialize(hash={})
         @hash = {}
         @mutex = Mutex.new
+        self.class.connections[object_id] = self
       end
 
       def [](key)
@@ -23,6 +24,18 @@ module Asynchronic
 
       def keys
         @hash.keys.map { |k| Key.new k }
+      end
+
+      alias_method :connection, :object_id
+
+      def self.connect(object_id)
+        connections[object_id]
+      end
+
+      private
+
+      def self.connections
+        @connections ||= {}
       end
 
     end

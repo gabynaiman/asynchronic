@@ -26,35 +26,37 @@ describe Asynchronic, 'Facade' do
   it 'Environment' do
     Asynchronic.environment.tap do |env|
       env.queue_engine.must_equal Asynchronic.queue_engine
-      env.data_store.must_equal Asynchronic.data_store
+      env.data_store.connection.must_equal Asynchronic.data_store.scoped(:asynchronic).connection
     end
   end
 
   it 'Load process' do
-    process = Asynchronic.environment.build_process BasicJob
-    Asynchronic[process.pid].tap do |p|
-      p.pid.must_equal process.pid
-      p.job.must_equal process.job
+    process = Asynchronic.environment.create_process BasicJob
+    Asynchronic[process.id].tap do |p|
+      p.id.must_equal process.id
+      p.type.must_equal process.type
+      p.created_at.must_equal process.created_at
     end
   end
 
   it 'List processes' do
-    pids = 3.times.map do 
-      process = Asynchronic.environment.build_process SequentialJob
-      process.pid
+    ids = 3.times.map do 
+      process = Asynchronic.environment.create_process SequentialJob
+      process.id
     end
 
     Asynchronic.processes.count.must_equal 3
-    Asynchronic.processes.map(&:pid).each { |pid| pids.must_include pid }
+    3.times { |i| Asynchronic.processes[i].id == ids[i] }
   end
 
   it 'Enqueue' do
-    pid = BasicJob.enqueue input: 100
+    id = BasicJob.enqueue input: 100
     
     Asynchronic.environment.tap do |env|
-      env.default_queue.to_a.must_equal [pid]
-      env[pid].must_be_instance_of BasicJob
-      env.load_process(pid)[:input].must_equal 100
+      process = env.load_process id
+      process.type.must_equal BasicJob
+      process.params[:input].must_equal 100
+      env.default_queue.must_enqueued process
     end
   end
 

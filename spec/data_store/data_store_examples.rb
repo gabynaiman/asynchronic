@@ -27,7 +27,7 @@ module DataStoreExamples
 
     array = []
     data_store.each { |k,v| array << "#{k} => #{v}" }
-    array.must_equal ['a => 1', 'b => 2']
+    array.must_equal_contents ['a => 1', 'b => 2']
   end
 
   it 'Merge' do
@@ -65,8 +65,8 @@ module DataStoreExamples
     lazy_store = data_store.lazy
     lazy_value = lazy_store[:key]
 
+    data_store.wont_be :lazy?
     lazy_store.must_be :lazy?
-    lazy_value.must_be :proxy?
     lazy_value.must_equal 1
 
     data_store[:key] =  2

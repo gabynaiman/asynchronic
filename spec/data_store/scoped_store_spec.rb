@@ -53,4 +53,8 @@ describe Asynchronic::DataStore::ScopedStore do
     nested[:key].must_equal 1
   end
 
+  it 'To string' do
+    scoped_store.to_s.must_match /#<Asynchronic::DataStore::ScopedStore @data_store=.+ @scope=scope>/
+  end
+
 end

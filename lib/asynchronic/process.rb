@@ -11,7 +11,7 @@ module Asynchronic
       aborted: :finalized_at
     }
 
-    ATTRIBUTE_NAMES = [:type, :queue, :status, :dependencies, :result, :error] | TIME_TRACKING_MAP.values.uniq
+    ATTRIBUTE_NAMES = [:type, :name, :queue, :status, :dependencies, :result, :error] | TIME_TRACKING_MAP.values.uniq
 
     attr_reader :id
 
@@ -53,16 +53,14 @@ module Asynchronic
       type.new self
     end
 
-    def processes(name=nil)
-      index = data_store.scoped(:processes).keys.
-        select { |k| k.sections.count == 2 && k.match(/type$/) }.
-        inject(HashWithIndiferentAccess.new) do |hash, key|
-          reference = Object.const_get(key.sections.first) rescue key.sections.first
-          hash[reference] = Process.new environment, id[:processes][reference]
-          hash
-        end
+    def [](process_name)
+      processes.detect { |p| p.name == process_name }
+    end
 
-      name ? index[name] : index.values
+    def processes
+      data_store.scoped(:processes).keys.
+        select { |k| k.sections.count == 2 && k.match(/name$/) }.
+        sort.map { |k| Process.new environment, id[:processes][k.remove_last] }
     end
 
     def parent
@@ -71,7 +69,7 @@ module Asynchronic
 
     def dependencies
       return [] unless parent
-      data_store[:dependencies].map { |d| parent.processes d }
+      data_store[:dependencies].map { |d| parent[d] }
     end
 
     def enqueue
@@ -87,7 +85,7 @@ module Asynchronic
     def wakeup
       if waiting?
         if processes.any?(&:aborted?)
-          abort! Error.new "Error caused by #{processes.select(&:aborted?).map{|p| p.id.sections.last}.join(', ')}"
+          abort! Error.new "Error caused by #{processes.select(&:aborted?).map{|p| p.name}.join(', ')}"
         elsif processes.all?(&:completed?)
           completed!
         else
@@ -99,8 +97,7 @@ module Asynchronic
     end
 
     def nest(type, params={})
-      name = params.delete(:name) || type
-      self.class.create @environment, type, params.merge(id: id[:processes][name])
+      self.class.create @environment, type, params.merge(id: id[:processes][processes.count])
     end
 
     def self.create(environment, type, params={})
@@ -110,11 +107,19 @@ module Asynchronic
 
       new(environment, id) do
         self.type = type
+        self.name = params.delete(:alias) || type
         self.queue = params.delete :queue
         self.dependencies = Array(params.delete(:dependencies)) | Array(params.delete(:dependency))
         self.params = params
         pending!
       end
+    end
+
+    def self.all(environment)
+      environment.data_store.keys.
+        select { |k| k.sections.count == 2 && k.match(/created_at$/) }.
+        sort_by { |k| environment.data_store[k] }.reverse.
+        map { |k| Process.new environment, k.remove_last }
     end
 
     private

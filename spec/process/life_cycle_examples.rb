@@ -46,27 +46,27 @@ module LifeCycleExamples
     execute queue
 
     process.must_be_waiting
-    process.processes(SequentialJob::Step1).must_be_queued
-    process.processes(SequentialJob::Step1).must_have_params input: 50
-    process.processes(SequentialJob::Step2).must_be_pending
-    process.processes(SequentialJob::Step2).must_have_params input: nil
-    queue.must_enqueued process.processes(SequentialJob::Step1)
+    process[SequentialJob::Step1].must_be_queued
+    process[SequentialJob::Step1].must_have_params input: 50
+    process[SequentialJob::Step2].must_be_pending
+    process[SequentialJob::Step2].must_have_params input: nil
+    queue.must_enqueued process[SequentialJob::Step1]
 
     execute queue
 
     process.must_be_waiting
-    process.processes(SequentialJob::Step1).must_be_completed
-    process.processes(SequentialJob::Step1).result.must_equal 500
-    process.processes(SequentialJob::Step2).must_be_queued
-    process.processes(SequentialJob::Step2).must_have_params input: 500
-    queue.must_enqueued process.processes(SequentialJob::Step2)
+    process[SequentialJob::Step1].must_be_completed
+    process[SequentialJob::Step1].result.must_equal 500
+    process[SequentialJob::Step2].must_be_queued
+    process[SequentialJob::Step2].must_have_params input: 500
+    queue.must_enqueued process[SequentialJob::Step2]
 
     execute queue
 
     process.must_be_completed
     process.result.must_equal 5
-    process.processes(SequentialJob::Step2).must_be_completed
-    process.processes(SequentialJob::Step2).result.must_equal 5
+    process[SequentialJob::Step2].must_be_completed
+    process[SequentialJob::Step2].result.must_equal 5
     queue.must_be_empty
   end
 
@@ -85,118 +85,122 @@ module LifeCycleExamples
     execute queue
 
     process.must_be_waiting
-    process.processes(GraphJob::Sum).must_be_queued
-    process.processes(GraphJob::Sum).must_have_params input: 100
-    process.processes(GraphJob::TenPercent).must_be_pending
-    process.processes(GraphJob::TenPercent).must_have_params input: nil
-    process.processes(GraphJob::TwentyPercent).must_be_pending
-    process.processes(GraphJob::TwentyPercent).must_have_params input: nil
-    process.processes(GraphJob::Total).must_be_pending
-    process.processes(GraphJob::Total).must_have_params '10%' => nil, '20%' => nil
-    queue.must_enqueued process.processes(GraphJob::Sum)
+    process[GraphJob::Sum].must_be_queued
+    process[GraphJob::Sum].must_have_params input: 100
+    process[GraphJob::TenPercent].must_be_pending
+    process[GraphJob::TenPercent].must_have_params input: nil
+    process[GraphJob::TwentyPercent].must_be_pending
+    process[GraphJob::TwentyPercent].must_have_params input: nil
+    process[GraphJob::Total].must_be_pending
+    process[GraphJob::Total].must_have_params '10%' => nil, '20%' => nil
+    queue.must_enqueued process[GraphJob::Sum]
     
     execute queue
 
     process.must_be_waiting
-    process.processes(GraphJob::Sum).must_be_completed
-    process.processes(GraphJob::Sum).result.must_equal 200
-    process.processes(GraphJob::TenPercent).must_be_queued
-    process.processes(GraphJob::TenPercent).must_have_params input: 200
-    process.processes(GraphJob::TwentyPercent).must_be_queued
-    process.processes(GraphJob::TwentyPercent).must_have_params input: 200
-    process.processes(GraphJob::Total).must_be_pending
-    queue.must_enqueued [process.processes(GraphJob::TenPercent), process.processes(GraphJob::TwentyPercent)]
+    process[GraphJob::Sum].must_be_completed
+    process[GraphJob::Sum].result.must_equal 200
+    process[GraphJob::TenPercent].must_be_queued
+    process[GraphJob::TenPercent].must_have_params input: 200
+    process[GraphJob::TwentyPercent].must_be_queued
+    process[GraphJob::TwentyPercent].must_have_params input: 200
+    process[GraphJob::Total].must_be_pending
+    queue.must_enqueued [process[GraphJob::TenPercent], process[GraphJob::TwentyPercent]]
 
     2.times { execute queue }
 
     process.must_be_waiting
-    process.processes(GraphJob::TenPercent).must_be_completed
-    process.processes(GraphJob::TenPercent).result.must_equal 20
-    process.processes(GraphJob::TwentyPercent).must_be_completed
-    process.processes(GraphJob::TwentyPercent).result.must_equal 40
-    process.processes(GraphJob::Total).must_be_queued
-    queue.must_enqueued process.processes(GraphJob::Total)
+    process[GraphJob::TenPercent].must_be_completed
+    process[GraphJob::TenPercent].result.must_equal 20
+    process[GraphJob::TwentyPercent].must_be_completed
+    process[GraphJob::TwentyPercent].result.must_equal 40
+    process[GraphJob::Total].must_be_queued
+    queue.must_enqueued process[GraphJob::Total]
 
     execute queue
 
     process.must_be_completed
     process.result.must_equal '10%' => 20, '20%' => 40
-    process.processes(GraphJob::Total).must_be_completed
-    process.processes(GraphJob::Total).result.must_equal '10%' => 20, '20%' => 40
+    process[GraphJob::Total].must_be_completed
+    process[GraphJob::Total].result.must_equal '10%' => 20, '20%' => 40
     queue.must_be_empty
   end
 
   it 'Parallel' do
-		skip
     process = create ParallelJob, input: 10, times: 3
 
     process.must_be_initialized
+    process.must_have_params input: 10, times: 3
     queue.must_be_empty
 
     process.enqueue
 
     process.must_be_queued
     process.processes.must_be_empty
-    process.must_have input: 10, times: 3
     queue.must_enqueued process
 
     execute queue
 
     process.must_be_waiting
-    process.processes.each { |p| p.must_be_queued }
-    process.must_have input: 10, times: 3
+    process.processes.count.must_equal 3
+    process.processes.each_with_index do |p,i|
+      p.must_be_queued
+      p.must_have_params input: 10, index: i
+    end
     queue.must_enqueued process.processes
 
     3.times { execute queue }
 
     process.must_be_completed
-    process.processes.each { |p| p.must_be_completed }
-    hash = Hash[3.times.map { |i| ["key_#{i}", 10 * i] }]
-    process.must_have hash.merge(input: 10, times: 3)
+    process.result.must_equal 3
+    process.processes.each_with_index do |p,i|
+      p.must_be_completed
+      p.result.must_equal 10 * i
+    end
     queue.must_be_empty
   end
 
   it 'Nested' do
-		skip
     process = create NestedJob, input: 4
 
     process.must_be_initialized
+    process.must_have_params input: 4
     queue.must_be_empty
 
     process.enqueue
 
     process.must_be_queued
     process.processes.must_be_empty
-    process.must_have input: 4
     queue.must_enqueued process
 
     execute queue
 
     process.must_be_waiting
-    process.processes(NestedJob::Level1).must_be_queued
-    process.processes(NestedJob::Level1).processes.must_be_empty
-    process.must_have input: 4
-    queue.must_enqueued process.processes(NestedJob::Level1)
+    process[NestedJob::Level1].must_be_queued
+    process[NestedJob::Level1].must_have_params input: 4
+    process[NestedJob::Level1].processes.must_be_empty
+    queue.must_enqueued process[NestedJob::Level1]
 
     execute queue
 
     process.must_be_waiting
-    process.processes(NestedJob::Level1).must_be_waiting
-    process.processes(NestedJob::Level1).processes(NestedJob::Level1::Level2).must_be_queued
-    process.must_have input: 5
-    queue.must_enqueued process.processes(NestedJob::Level1).processes(NestedJob::Level1::Level2)
+    process[NestedJob::Level1].must_be_waiting
+    process[NestedJob::Level1][NestedJob::Level1::Level2].must_be_queued
+    process[NestedJob::Level1][NestedJob::Level1::Level2].must_have_params input: 5
+    queue.must_enqueued process[NestedJob::Level1][NestedJob::Level1::Level2]
 
     execute queue
 
     process.must_be_completed
-    process.processes(NestedJob::Level1).must_be_completed
-    process.processes(NestedJob::Level1).processes(NestedJob::Level1::Level2).must_be_completed
-    process.must_have input: 5, output: 25
+    process.result.must_equal 25
+    process[NestedJob::Level1].must_be_completed
+    process[NestedJob::Level1].result.must_equal 25
+    process[NestedJob::Level1][NestedJob::Level1::Level2].must_be_completed
+    process[NestedJob::Level1][NestedJob::Level1::Level2].result.must_equal 25
     queue.must_be_empty
   end
 
   it 'Dependency alias' do
-		skip
     process = create DependencyAliasJob
 
     process.must_be_initialized
@@ -206,52 +210,56 @@ module LifeCycleExamples
 
     process.must_be_queued
     process.processes.must_be_empty
-    process.data.must_be_empty
     queue.must_enqueued process
 
     execute queue
 
     process.must_be_waiting
-    process.processes(:word_1).must_be_queued
-    process.processes(:word_2).must_be_pending
-    process.processes(:word_3).must_be_pending
-    process.data.must_be_empty
-    queue.must_enqueued process.processes(:word_1)
+    process[:word_1].must_be_queued
+    process[:word_1].must_have_params text: 'Take'
+    process[:word_2].must_be_pending
+    process[:word_2].must_have_params text: 'it', prefix: nil
+    process[:word_3].must_be_pending
+    process[:word_3].must_have_params text: 'easy', prefix: nil
+    queue.must_enqueued process[:word_1]
 
     execute queue
 
     process.must_be_waiting
-    process.processes(:word_1).must_be_completed
-    process.processes(:word_2).must_be_queued
-    process.processes(:word_3).must_be_pending
-    process.must_have text: 'Take'
-    queue.must_enqueued process.processes(:word_2)
+    process[:word_1].must_be_completed
+    process[:word_1].result.must_equal 'Take'
+    process[:word_2].must_be_queued
+    process[:word_2].must_have_params text: 'it', prefix: 'Take'
+    process[:word_3].must_be_pending
+    queue.must_enqueued process[:word_2]
 
     execute queue
 
     process.must_be_waiting
-    process.processes(:word_1).must_be_completed
-    process.processes(:word_2).must_be_completed
-    process.processes(:word_3).must_be_queued
-    process.must_have text: 'Take it'
-    queue.must_enqueued process.processes(:word_3)
+    process[:word_1].must_be_completed
+    process[:word_2].must_be_completed
+    process[:word_2].result.must_equal 'Take it'
+    process[:word_3].must_be_queued
+    process[:word_3].must_have_params text: 'easy', prefix: 'Take it'
+    queue.must_enqueued process[:word_3]
 
     execute queue
 
     process.must_be_completed
-    process.processes(:word_1).must_be_completed
-    process.processes(:word_2).must_be_completed
-    process.processes(:word_3).must_be_completed
-    process.must_have text: 'Take it easy'
+    process.result.must_equal 'Take it easy'
+    process[:word_1].must_be_completed
+    process[:word_2].must_be_completed
+    process[:word_3].must_be_completed
+    process[:word_3].result.must_equal 'Take it easy'
     queue.must_be_empty
   end
   
   it 'Custom queue' do
-		skip
     process = create CustomQueueJob, input: 'hello'
 
     process.must_be_initialized
-    
+    process.must_have_params input: 'hello'
+
     env.queue(:queue_1).must_be_empty
     env.queue(:queue_2).must_be_empty
     env.queue(:queue_3).must_be_empty
@@ -260,7 +268,6 @@ module LifeCycleExamples
 
     process.must_be_queued
     process.processes.must_be_empty
-    process.must_have input: 'hello'
     
     env.queue(:queue_1).must_enqueued process
     env.queue(:queue_2).must_be_empty
@@ -269,18 +276,19 @@ module LifeCycleExamples
     execute env.queue(:queue_1)
 
     process.must_be_waiting
-    process.processes(CustomQueueJob::Reverse).must_be_queued
-    process.must_have input: 'hello'
+    process[CustomQueueJob::Reverse].must_be_queued
+    process[CustomQueueJob::Reverse].must_have_params input: 'hello'
     
     env.queue(:queue_1).must_be_empty
-    env.queue(:queue_2).must_enqueued process.processes(CustomQueueJob::Reverse)
+    env.queue(:queue_2).must_enqueued process[CustomQueueJob::Reverse]
     env.queue(:queue_3).must_be_empty
 
     execute env.queue(:queue_2)
 
     process.must_be_completed
-    process.processes(CustomQueueJob::Reverse).must_be_completed
-    process.must_have input: 'hello', output: 'olleh'
+    process.result.must_equal 'olleh'
+    process[CustomQueueJob::Reverse].must_be_completed
+    process[CustomQueueJob::Reverse].result.must_equal 'olleh'
     
     env.queue(:queue_1).must_be_empty
     env.queue(:queue_2).must_be_empty
@@ -319,8 +327,8 @@ module LifeCycleExamples
     execute queue
 
     process.must_be_waiting
-    process.processes(ExceptionJob).must_be_queued
-    queue.must_enqueued process.processes(ExceptionJob)
+    process[ExceptionJob].must_be_queued
+    queue.must_enqueued process[ExceptionJob]
 
     execute queue
 
@@ -328,9 +336,9 @@ module LifeCycleExamples
     process.error.must_be_instance_of Asynchronic::Error
     process.error.message.must_equal 'Error caused by ExceptionJob'
 
-    process.processes(ExceptionJob).must_be_aborted
-    process.processes(ExceptionJob).error.must_be_instance_of Asynchronic::Error
-    process.processes(ExceptionJob).error.message.must_equal 'Error for test'
+    process[ExceptionJob].must_be_aborted
+    process[ExceptionJob].error.must_be_instance_of Asynchronic::Error
+    process[ExceptionJob].error.message.must_equal 'Error for test'
   end
 
 end

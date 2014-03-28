@@ -27,6 +27,14 @@ module Asynchronic
       def keys
         @connection.keys.map { |k| Key.new k }
       end
+
+      def connection
+        @connection.client.options
+      end
+
+      def self.connect(options)
+        new options
+      end
       
     end
   end

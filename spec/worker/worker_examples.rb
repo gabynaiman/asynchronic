@@ -6,7 +6,7 @@ module WorkerExamples
 
   def enqueue_processes
     processes = 5.times.map do
-      env.build_process(WorkerJob, queue: :test_worker).tap(&:enqueue)
+      env.create_process(WorkerJob, queue: :test_worker).tap(&:enqueue)
     end
 
     queue.must_enqueued processes
