@@ -16,6 +16,18 @@ module Asynchronic
         split SEPARATOR
       end
 
+      def nested?
+        sections.count > 1
+      end
+
+      def remove_first(count=1)
+        self.class.new sections[count..-1].join(SEPARATOR)
+      end
+
+      def remove_last(count=1)
+        self.class.new sections[0..-count-1].join(SEPARATOR)
+      end
+
     end
   end
 end

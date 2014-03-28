@@ -22,7 +22,7 @@ module Asynchronic
       end
 
       def keys
-        @hash.keys
+        @hash.keys.map { |k| Key.new k }
       end
 
     end

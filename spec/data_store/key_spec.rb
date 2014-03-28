@@ -35,9 +35,26 @@ describe Asynchronic::DataStore::Key do
     key[3].must_equal 'foo|3'
   end
 
-  it 'Split sections' do
+  it 'Split in sections' do
     key = Key.new(:foo)[:bar][:buz]
     key.sections.must_equal %w(foo bar buz)
+  end
+
+  it 'Detect nested sections' do
+    Key.new(:foo).wont_be :nested?
+    Key.new(:foo)[:bar].must_be :nested?
+  end
+
+  it 'Remove first sections' do
+    key = Key.new(:foo)[:bar][:buz]
+    key.remove_first.must_equal 'bar|buz'
+    key.remove_first(2).must_equal 'buz'
+  end
+
+  it 'Remove last sections' do
+    key = Key.new(:foo)[:bar][:buz]
+    key.remove_last.must_equal 'foo|bar'
+    key.remove_last(2).must_equal 'foo'
   end
   
 end

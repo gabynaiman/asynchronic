@@ -25,7 +25,7 @@ module Asynchronic
       end
 
       def keys
-        @connection.keys
+        @connection.keys.map { |k| Key.new k }
       end
       
     end

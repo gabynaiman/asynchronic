@@ -24,7 +24,11 @@ module Asynchronic
       def keys
         @data_store.keys.
           select { |k| k.start_with? @scope[''] }.
-          map { |k| k[@scope[''].size..-1] }
+          map { |k| Key.new(k).remove_first @scope.sections.count }
+      end
+
+      def to_s
+        "#<#{self.class} @data_store=#{@data_store} @scope=#{@scope}>"
       end
 
     end

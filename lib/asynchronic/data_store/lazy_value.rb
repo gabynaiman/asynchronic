@@ -14,6 +14,10 @@ module Asynchronic
         self
       end
 
+      def inspect
+        "#<#{proxy_class} @data_store=#{@data_store} @key=#{@key}>"
+      end
+
       private
 
       def __getobj__
