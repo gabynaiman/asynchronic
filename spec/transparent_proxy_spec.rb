@@ -17,7 +17,7 @@ describe Asynchronic::TransparentProxy do
     
     proxy.must_be :proxy?
     proxy.proxy_class.must_equal Asynchronic::TransparentProxy
-    proxy.proxy_inspect.must_match /#<Asynchronic::TransparentProxy:\dx[a-z\d]+ @object=1>/
+    proxy.proxy_inspect.must_match /#<Asynchronic::TransparentProxy @object=1>/
     proxy.proxy_methods.must_include_all [:__send__, :object_id, :tap]
     proxy.must_respond_to :proxy_respond_to?
   end

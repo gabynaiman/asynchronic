@@ -1,7 +1,7 @@
 module Asynchronic
   class TransparentProxy
 
-    PROXY_METHODS = [:class, :inspect, :methods, :respond_to?]
+    PROXY_METHODS = [:class, :methods, :respond_to?]
     
     SAFE_METHODS = [:__send__, :object_id, :tap] + PROXY_METHODS.map { |m| "proxy_#{m}".to_sym }
 
@@ -12,6 +12,10 @@ module Asynchronic
 
     def inspect
       __getobj__.inspect
+    end
+
+    def proxy_inspect
+      "#<#{proxy_class} @object=#{inspect}>"
     end
 
     def methods(*args)
