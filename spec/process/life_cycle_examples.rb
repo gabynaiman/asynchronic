@@ -49,7 +49,7 @@ module LifeCycleExamples
     process[SequentialJob::Step1].must_be_queued
     process[SequentialJob::Step1].must_have_params input: 50
     process[SequentialJob::Step2].must_be_pending
-    process[SequentialJob::Step2].must_have_params input: nil
+    process[SequentialJob::Step2].must_have_params input: 50
     queue.must_enqueued process[SequentialJob::Step1]
 
     execute queue
@@ -58,13 +58,12 @@ module LifeCycleExamples
     process[SequentialJob::Step1].must_be_completed
     process[SequentialJob::Step1].result.must_equal 500
     process[SequentialJob::Step2].must_be_queued
-    process[SequentialJob::Step2].must_have_params input: 500
     queue.must_enqueued process[SequentialJob::Step2]
 
     execute queue
 
     process.must_be_completed
-    process.result.must_equal 5
+    process.result.must_be_nil
     process[SequentialJob::Step2].must_be_completed
     process[SequentialJob::Step2].result.must_equal 5
     queue.must_be_empty
@@ -200,8 +199,8 @@ module LifeCycleExamples
     queue.must_be_empty
   end
 
-  it 'Dependency alias' do
-    process = create DependencyAliasJob
+  it 'Alias' do
+    process = create AliasJob
 
     process.must_be_initialized
     queue.must_be_empty

@@ -3,6 +3,9 @@ module Asynchronic
     class ScopedStore
 
       include Helper
+
+      attr_reader :data_store
+      attr_reader :scope
       
       def initialize(data_store, scope)
         @data_store = data_store

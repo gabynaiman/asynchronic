@@ -109,7 +109,7 @@ module Asynchronic
         self.type = type
         self.name = params.delete(:alias) || type
         self.queue = params.delete :queue
-        self.dependencies = Array(params.delete(:dependencies)) | Array(params.delete(:dependency))
+        self.dependencies = Array(params.delete(:dependencies)) | Array(params.delete(:dependency)) | infer_dependencies(params)
         self.params = params
         pending!
       end
@@ -167,6 +167,11 @@ module Asynchronic
       message = "Failed process #{type} (#{id})\n#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
       Asynchronic.logger.error('Asynchronic') { message }
       abort! ex
+    end
+
+    def infer_dependencies(params)
+      params.values.select { |v| v.respond_to?(:proxy?) && v.proxy_class == DataStore::LazyValue }
+                   .map { |v| Process.new(environment, v.data_store.scope).name }
     end
 
   end

@@ -11,9 +11,9 @@ class SequentialJob < Asynchronic::Job
     async Step1, input: params[:input]
     
     async Step2, dependency: Step1, 
-                 input: result(Step1)
+                 input: params[:input]
 
-    result Step2
+    nil
   end
 
   class Step1 < Asynchronic::Job
@@ -24,7 +24,7 @@ class SequentialJob < Asynchronic::Job
 
   class Step2 < Asynchronic::Job
     def call
-      params[:input] / 100
+      params[:input] / 10
     end
   end
 
@@ -36,14 +36,11 @@ class GraphJob < Asynchronic::Job
   def call
     async Sum, input: params[:input]
 
-    async TenPercent, dependency: Sum, 
-                      input: result(Sum)
+    async TenPercent, input: result(Sum)
 
-    async TwentyPercent, dependency: Sum, 
-                         input: result(Sum)
+    async TwentyPercent, input: result(Sum)
 
-    async Total, dependencies: [TenPercent, TwentyPercent], 
-                 '10%' => result(TenPercent),
+    async Total, '10%' => result(TenPercent),
                  '20%' => result(TwentyPercent)
 
     result Total
@@ -112,18 +109,16 @@ class NestedJob < Asynchronic::Job
 end
 
 
-class DependencyAliasJob < Asynchronic::Job
+class AliasJob < Asynchronic::Job
   def call
     async Write, alias: :word_1,
                  text: 'Take'
     
     async Write, alias: :word_2, 
-                 dependency: :word_1,
                  text: 'it', 
                  prefix: result(:word_1)
     
     async Write, alias: :word_3, 
-                 dependency: :word_2,
                  text: 'easy', 
                  prefix: result(:word_2)
 

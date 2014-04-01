@@ -19,11 +19,11 @@ module Asynchronic
         "#<#{proxy_class} @data_store_class=#{@data_store_class} @data_store_connection=#{@data_store_connection} @key=#{@key}>"
       end
 
-      private
-
       def data_store
         @data_store_class.connect @data_store_connection
       end
+
+      private
 
       def __getobj__
         @value ||= data_store[@key]
