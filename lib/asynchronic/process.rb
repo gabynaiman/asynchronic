@@ -73,8 +73,8 @@ module Asynchronic
     end
 
     def enqueue
-      environment.enqueue id, queue || type.queue
       queued!
+      environment.enqueue id, queue || type.queue
     end
 
     def execute

@@ -3,7 +3,7 @@ module Asynchronic
 
     PROXY_METHODS = [:class, :methods, :respond_to?]
     
-    SAFE_METHODS = [:__send__, :object_id, :tap] + PROXY_METHODS.map { |m| "proxy_#{m}".to_sym }
+    SAFE_METHODS = [:__send__, :__id__, :object_id, :tap] + PROXY_METHODS.map { |m| "proxy_#{m}".to_sym }
 
     PROXY_METHODS.each { |m| alias_method "proxy_#{m}".to_sym, m }
 
