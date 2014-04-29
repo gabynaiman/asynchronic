@@ -1,8 +1,8 @@
-require_relative '../transparent_proxy'
-
 module Asynchronic
   module DataStore
     class LazyStore < TransparentProxy
+
+      include Helper
 
       def [](key)
         LazyValue.new __getobj__, key

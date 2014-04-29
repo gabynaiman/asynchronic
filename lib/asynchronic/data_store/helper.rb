@@ -37,6 +37,10 @@ module Asynchronic
         LazyStore.new self
       end
 
+      def no_lazy
+        NoLazyStore.new self
+      end
+
     end
   end
 end

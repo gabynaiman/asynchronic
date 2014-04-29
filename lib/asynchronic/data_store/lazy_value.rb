@@ -1,5 +1,3 @@
-require_relative '../transparent_proxy'
-
 module Asynchronic
   module DataStore
     class LazyValue < TransparentProxy
@@ -21,6 +19,10 @@ module Asynchronic
 
       def data_store
         @data_store_class.connect @data_store_connection
+      end
+
+      def to_value
+        __getobj__
       end
 
       private

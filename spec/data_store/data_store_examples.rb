@@ -74,5 +74,21 @@ module DataStoreExamples
     lazy_value.must_equal 1
     lazy_value.reload.must_equal 2
   end
+
+  it 'No lazy' do
+    data_store[:key] =  1
+    lazy_store = data_store.lazy
+    no_lazy_store = lazy_store.no_lazy
+
+    data_store.wont_be :lazy?
+    lazy_store.must_be :lazy?
+    no_lazy_store.wont_be :lazy?
+
+    no_lazy_store[:key].must_equal 1
+
+    data_store[:key] =  2
+
+    no_lazy_store[:key].must_equal 2
+  end
   
 end

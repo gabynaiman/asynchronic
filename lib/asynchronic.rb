@@ -3,6 +3,7 @@ require 'securerandom'
 require 'redis'
 require 'ost'
 require 'class_config'
+require 'transparent_proxy'
 require 'logger'
 
 Dir.glob(File.expand_path('asynchronic/**/*.rb', File.dirname(__FILE__))).sort.each { |f| require f }

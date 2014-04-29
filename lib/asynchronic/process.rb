@@ -42,7 +42,7 @@ module Asynchronic
     end
 
     def params
-      data_store.scoped(:params).readonly
+      data_store.scoped(:params).no_lazy.readonly
     end
 
     def result

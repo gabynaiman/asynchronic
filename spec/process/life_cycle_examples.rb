@@ -340,4 +340,47 @@ module LifeCycleExamples
     process[ExceptionJob].error.message.must_equal 'Error for test'
   end
 
+  it 'Forward reference' do
+    process = create ForwardReferenceJob
+
+    process.must_be_initialized
+    queue.must_be_empty
+
+    process.enqueue
+
+    process.must_be_queued
+    queue.must_enqueued process
+
+    execute queue
+
+    process.must_be_waiting
+    process[ForwardReferenceJob::BuildReferenceJob].must_be_queued
+    process[ForwardReferenceJob::SendReferenceJob].must_be_pending
+    queue.must_enqueued process[ForwardReferenceJob::BuildReferenceJob]
+
+    execute queue
+
+    process.must_be_waiting
+    process[ForwardReferenceJob::BuildReferenceJob].must_be_completed
+    process[ForwardReferenceJob::SendReferenceJob].must_be_queued
+    queue.must_enqueued process[ForwardReferenceJob::SendReferenceJob]
+
+    execute queue
+
+    process.must_be_waiting
+    process[ForwardReferenceJob::BuildReferenceJob].must_be_completed
+    process[ForwardReferenceJob::SendReferenceJob].must_be_waiting
+    process[ForwardReferenceJob::SendReferenceJob][ForwardReferenceJob::UseReferenceJob].must_be_queued
+    queue.must_enqueued process[ForwardReferenceJob::SendReferenceJob][ForwardReferenceJob::UseReferenceJob]
+
+    execute queue
+
+    process.must_be_completed
+    process.result.must_equal 2
+    process[ForwardReferenceJob::BuildReferenceJob].must_be_completed
+    process[ForwardReferenceJob::SendReferenceJob].must_be_completed
+    process[ForwardReferenceJob::SendReferenceJob][ForwardReferenceJob::UseReferenceJob].must_be_completed
+    queue.must_be_empty
+  end
+
 end

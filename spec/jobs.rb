@@ -167,3 +167,30 @@ class WorkerJob < Asynchronic::Job
   def call
   end
 end
+
+class ForwardReferenceJob < Asynchronic::Job
+  def call
+    async BuildReferenceJob
+    async SendReferenceJob, number: result(BuildReferenceJob)
+    result SendReferenceJob
+  end
+
+  class BuildReferenceJob < Asynchronic::Job
+    def call
+      1
+    end
+  end
+
+  class SendReferenceJob < Asynchronic::Job
+    def call
+      async UseReferenceJob, number: params[:number]
+      result UseReferenceJob
+    end
+  end
+
+  class UseReferenceJob < Asynchronic::Job
+    def call
+      params[:number] + 1
+    end
+  end
+end
