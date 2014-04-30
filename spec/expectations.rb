@@ -17,7 +17,6 @@ module MiniTest::Assertions
     process.wont_be :finalized?
     
     process.processes.must_be_empty
-    # process.data.must_be_empty
     process.error.must_be_nil
     
     process.created_at.must_be_instance_of Time
