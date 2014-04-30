@@ -89,7 +89,9 @@ module Asynchronic
         elsif processes.all?(&:completed?)
           completed!
         else
-          processes.select(&:ready?).each(&:enqueue)
+          processes.each do |p|
+            p.enqueue if p.ready?
+          end
         end
       end
 
