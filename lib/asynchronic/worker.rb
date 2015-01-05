@@ -15,7 +15,7 @@ class Asynchronic::Worker
   def start
     Asynchronic.logger.info('Asynchronic') { "Starting worker of #{queue_name} (#{Process.pid})" }
 
-    Signal.trap('INT') { stop }
+    Signal.trap('QUIT') { stop }
     
     listener.listen(queue) do |pid|
       env.load_process(pid).execute
