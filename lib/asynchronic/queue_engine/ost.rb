@@ -63,7 +63,9 @@ module Asynchronic
 
         def listen(queue, &block)
           @current_queue = queue
-          queue.each &block
+          Asynchronic.retry_execution(self.class, 'listen') do
+            queue.each &block
+          end
         end
 
         def stop

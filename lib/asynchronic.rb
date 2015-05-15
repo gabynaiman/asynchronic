@@ -17,6 +17,8 @@ module Asynchronic
   attr_config :data_store, DataStore::InMemory.new
   attr_config :logger, Logger.new($stdout)
 
+  WAITING_TO_RETRY = 30
+  
   def self.environment
     Environment.new queue_engine, data_store
   end
@@ -27,6 +29,17 @@ module Asynchronic
 
   def self.processes
     environment.processes
+  end
+
+  def self.retry_execution(a_class, message)
+    begin
+      result = yield
+    rescue Exception => ex
+      logger.info(a_class) { "Retrying #{message}. ERROR: #{ex.message}" }
+      sleep WAITING_TO_RETRY
+      retry
+    end
+    result
   end
 
 end

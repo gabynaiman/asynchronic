@@ -79,7 +79,9 @@ module Asynchronic
 
     def execute
       run
-      wakeup
+      Asynchronic.retry_execution(self.class, 'wakeup') do
+        wakeup
+      end
     end
 
     def wakeup
@@ -168,7 +170,9 @@ module Asynchronic
     rescue Exception => ex
       message = "Failed process #{type} (#{id})\n#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
       Asynchronic.logger.error('Asynchronic') { message }
-      abort! ex
+      Asynchronic.retry_execution(self.class, 'abort') do
+        abort! ex
+      end
     end
 
     def infer_dependencies(params)
