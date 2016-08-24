@@ -30,5 +30,13 @@ module Asynchronic
       nil
     end
 
+    def retry_when(exceptions, interval=1)
+      yield
+    rescue *exceptions => ex
+      Asynchronic.logger.error(self.class) { "Retry for: #{ex.class} #{ex.message}" }
+      sleep interval
+      retry
+    end
+
   end
 end

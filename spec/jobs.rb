@@ -194,3 +194,14 @@ class ForwardReferenceJob < Asynchronic::Job
     end
   end
 end
+
+class WithRetriesJob < Asynchronic::Job
+  def call
+    @counter = 0
+    retry_when [RuntimeError] do
+      @counter += 1
+      raise 'Counter < 3' if @counter < 3
+      @counter
+    end
+  end
+end
