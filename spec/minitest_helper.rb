@@ -1,16 +1,10 @@
 require 'coverage_helper'
 require 'asynchronic'
 require 'minitest/autorun'
+require 'minitest/colorin'
 require 'minitest/great_expectations'
-require 'turn'
 require 'jobs'
 require 'expectations'
-
-Turn.config do |c|
-  c.format = :pretty
-  c.natural = true
-  c.ansi = true
-end
 
 class Module
   include Minitest::Spec::DSL

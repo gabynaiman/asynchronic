@@ -3,6 +3,9 @@ rvm:
   - 2.0
   - 2.1
   - 2.2
+  - 2.3.0
   - jruby
 services:
   - redis-server
+before_install:
+  - gem install bundler
