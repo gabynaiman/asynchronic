@@ -4,12 +4,13 @@ module Asynchronic
 
       include Helper
 
-      def initialize(*args)
+      def initialize(scope, *args)
+        @scope = Key.new scope
         @connection = ::Redis.new *args
       end
 
       def [](key)
-        value = @connection.get key.to_s
+        value = @connection.get @scope[key]
         value ? Marshal.load(value) : nil
       rescue => ex
         Asynchronic.logger.warn('Asynchronic') { ex.message }
@@ -17,23 +18,23 @@ module Asynchronic
       end
 
       def []=(key, value)
-        @connection.set key.to_s, Marshal.dump(value)
+        @connection.set @scope[key], Marshal.dump(value)
       end
 
       def delete(key)
-        @connection.del key.to_s
+        @connection.del @scope[key]
       end
 
       def keys
-        @connection.keys.map { |k| Key.new k }
+        @connection.keys(@scope['*']).map { |k| Key.new(k).remove_first }
       end
 
-      def connection
-        @connection.client.options
+      def connection_args
+        [@scope, @connection.client.options]
       end
 
-      def self.connect(options)
-        new options
+      def self.connect(*args)
+        new *args
       end
       
     end

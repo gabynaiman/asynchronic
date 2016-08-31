@@ -30,17 +30,19 @@ module Asynchronic
           map { |k| Key.new(k).remove_first @scope.sections.count }
       end
 
-      def connection
-        {
-          data_store_class: @data_store.class,
-          data_store_connection: @data_store.connection,
-          scope: @scope
-        }
+      def connection_args
+        [
+          {
+            data_store_class: @data_store.class,
+            data_store_connection_args: @data_store.connection_args,
+            scope: @scope
+          }
+        ]
       end
 
-      def self.connect(options)
-        data_store = options[:data_store_class].connect options[:data_store_connection]
-        new data_store, options[:scope]
+      def self.connect(*args)
+        data_store = args[0][:data_store_class].connect *args[0][:data_store_connection_args]
+        new data_store, args[0][:scope]
       end
 
       def to_s

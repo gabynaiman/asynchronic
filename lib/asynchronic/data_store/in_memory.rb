@@ -26,7 +26,9 @@ module Asynchronic
         @hash.keys.map { |k| Key.new k }
       end
 
-      alias_method :connection, :object_id
+      def connection_args
+        [object_id]
+      end
 
       def self.connect(object_id)
         connections[object_id]

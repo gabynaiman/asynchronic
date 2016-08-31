@@ -2,7 +2,7 @@ require 'minitest_helper'
 
 describe Asynchronic, 'Facade' do
 
-  before do
+  after do
     Asynchronic.environment.data_store.clear
     Asynchronic.environment.queue_engine.clear
   end
@@ -26,7 +26,7 @@ describe Asynchronic, 'Facade' do
   it 'Environment' do
     Asynchronic.environment.tap do |env|
       env.queue_engine.must_equal Asynchronic.queue_engine
-      env.data_store.connection.must_equal Asynchronic.data_store.scoped(:asynchronic).connection
+      env.data_store.must_equal Asynchronic.data_store
     end
   end
 

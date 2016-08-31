@@ -4,9 +4,9 @@ require_relative './lazy_value_examples'
 
 describe Asynchronic::DataStore::Redis do
 
-  let(:data_store) { Asynchronic::DataStore::Redis.new }
+  let(:data_store) { Asynchronic::DataStore::Redis.new :asynchronic_test }
 
-  before do
+  after do
     data_store.clear
   end
 

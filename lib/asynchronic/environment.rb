@@ -6,7 +6,7 @@ module Asynchronic
     
     def initialize(queue_engine, data_store)
       @queue_engine = queue_engine
-      @data_store = data_store.scoped :asynchronic
+      @data_store = data_store
     end
 
     def queue(name)

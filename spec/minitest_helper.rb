@@ -5,6 +5,7 @@ require 'minitest/colorin'
 require 'minitest/great_expectations'
 require 'jobs'
 require 'expectations'
+require 'pry-nav'
 
 class Module
   include Minitest::Spec::DSL
@@ -15,11 +16,6 @@ Asynchronic.logger.level = Logger::FATAL
 class Minitest::Spec
   before do
     Asynchronic.restore_default_configuration
-  end
-
-  after do
-    Asynchronic::DataStore::Redis.new.clear
-    Asynchronic::QueueEngine::Ost.new.clear
   end
 end
 
