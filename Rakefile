@@ -9,7 +9,7 @@ Rake::TestTask.new(:spec) do |t|
 end
 
 task :console do
-  require 'pry'
+  require 'pry-nav'
   require 'asynchronic'
   ARGV.clear
   Pry.start
