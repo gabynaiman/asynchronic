@@ -401,4 +401,49 @@ module LifeCycleExamples
     queue.must_be_empty
   end
 
+  it 'Inheritance of queues in processes. Use default queue' do
+    process = create NestedJob, input: 100
+
+    process.queue.must_be_nil
+
+    process.enqueue
+    execute queue
+
+    process.processes.first.queue.must_be_nil
+    execute queue
+
+    process.processes.first.processes.first.queue.must_be_nil
+    execute queue
+  end
+
+  it 'Inheritance of queues in processes. Specify queue in params' do
+    process = create NestedJob, {input: 100, queue: :test_queue}
+
+    process.queue.must_equal :test_queue
+
+    process.enqueue
+    execute queue_engine[:test_queue]
+
+    process.processes.first.queue.must_equal :test_queue
+    execute queue_engine[:test_queue]
+
+    process.processes.first.processes.first.queue.must_equal :test_queue
+    execute queue_engine[:test_queue]
+  end
+
+  it 'Inheritance of queues in processes. Redefine queue in job class' do
+    process = create NestedJobWithDifferentsQueues, {input: 100, queue: :test_queue}
+
+    process.queue.must_equal :test_queue
+
+    process.enqueue
+    execute queue_engine[:test_queue]
+
+    process.processes.first.queue.must_equal :other_queue
+    execute queue_engine[:other_queue]
+
+    process.processes.first.processes.first.queue.must_equal :other_queue
+    execute queue_engine[:other_queue]
+  end
+
 end

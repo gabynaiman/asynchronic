@@ -205,3 +205,24 @@ class WithRetriesJob < Asynchronic::Job
     end
   end
 end
+
+class NestedJobWithDifferentsQueues < Asynchronic::Job
+  def call
+    async Level1, input: params[:input]
+    result Level1
+  end
+
+  class Level1 < Asynchronic::Job
+    queue :other_queue
+    def call
+      async Level2, input: params[:input] + 1
+      result Level2
+    end
+
+    class Level2 < Asynchronic::Job
+      def call
+        params[:input] + 1
+      end
+    end
+  end
+end

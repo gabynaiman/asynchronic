@@ -74,7 +74,7 @@ module Asynchronic
 
     def enqueue
       queued!
-      environment.enqueue id, queue || type.queue
+      environment.enqueue id, queue
     end
 
     def execute
@@ -112,7 +112,7 @@ module Asynchronic
       new(environment, id) do
         self.type = type
         self.name = params.delete(:alias) || type
-        self.queue = params.delete :queue
+        self.queue = params.delete(:queue) || type.queue || parent_queue
         self.dependencies = Array(params.delete(:dependencies)) | Array(params.delete(:dependency)) | infer_dependencies(params)
         self.params = params
         pending!
@@ -178,6 +178,10 @@ module Asynchronic
     def infer_dependencies(params)
       params.values.select { |v| v.respond_to?(:proxy?) && v.proxy_class == DataStore::LazyValue }
                    .map { |v| Process.new(environment, v.data_store.scope).name }
+    end
+
+    def parent_queue
+      parent.queue if parent
     end
 
   end
