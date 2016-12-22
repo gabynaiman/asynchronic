@@ -16,6 +16,7 @@ Asynchronic.logger.level = Logger::FATAL
 class Minitest::Spec
   before do
     Asynchronic.restore_default_configuration
+    Asynchronic.default_queue = :asynchronic_test
   end
 end
 

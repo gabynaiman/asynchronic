@@ -8,7 +8,7 @@ describe Asynchronic, 'Facade' do
   end
   
   it 'Default queue' do
-    Asynchronic.default_queue.must_equal :asynchronic
+    Asynchronic.default_queue.must_equal :asynchronic_test
   end
 
   it 'Default queue_engine' do
