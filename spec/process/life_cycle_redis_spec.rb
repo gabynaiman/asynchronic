@@ -8,6 +8,7 @@ describe Asynchronic::Process, 'Life cycle - Redis' do
 
   after do
     data_store.clear
+    queue_engine.clear
   end
 
   include LifeCycleExamples
