@@ -4,6 +4,11 @@ module LifeCycleExamples
 
   let(:queue) { env.default_queue }
 
+  after do
+    data_store.clear
+    queue_engine.clear
+  end
+
   def create(type, params={})
     env.create_process type, params
   end
