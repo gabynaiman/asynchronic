@@ -417,7 +417,7 @@ module LifeCycleExamples
   end
 
   it 'Inheritance of queues in processes. Specify queue in params' do
-    process = create NestedJob, {input: 100, queue: :test_queue}
+    process = create NestedJob, input: 100, queue: :test_queue
 
     process.queue.must_equal :test_queue
 
@@ -432,7 +432,7 @@ module LifeCycleExamples
   end
 
   it 'Inheritance of queues in processes. Redefine queue in job class' do
-    process = create NestedJobWithDifferentsQueues, {input: 100, queue: :test_queue}
+    process = create NestedJobWithDifferentsQueues, input: 100, queue: :test_queue
 
     process.queue.must_equal :test_queue
 
