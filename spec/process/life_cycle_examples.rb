@@ -437,7 +437,7 @@ module LifeCycleExamples
   end
 
   it 'Inheritance of queues in processes. Redefine queue in job class' do
-    process = create NestedJobWithDifferentsQueues, input: 100, queue: :test_queue
+    process = create NestedJobWithDifferentsQueuesJob, input: 100, queue: :test_queue
 
     process.queue.must_equal :test_queue
 
@@ -449,6 +449,17 @@ module LifeCycleExamples
 
     process.processes.first.processes.first.queue.must_equal :other_queue
     execute queue_engine[:other_queue]
+  end
+
+  it 'Data' do
+    process = create DataJob, input: 1
+  
+    process.enqueue
+    execute queue
+
+    process.must_be_completed
+    process.result.must_be_nil
+    process.data.must_equal text: 'Input was 1', value: 1
   end
 
 end

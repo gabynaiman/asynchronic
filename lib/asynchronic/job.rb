@@ -30,6 +30,10 @@ module Asynchronic
       nil
     end
 
+    def set(key, value)
+      @process.set key, value
+    end
+
     def retry_when(exceptions, interval=1)
       yield
     rescue *exceptions => ex

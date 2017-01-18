@@ -4,14 +4,14 @@ module Asynchronic
     STATUSES = [:pending, :queued, :running, :waiting, :completed, :aborted]
 
     TIME_TRACKING_MAP = {
-      pending: :created_at,
-      queued: :queued_at,
-      running: :started_at,
+      pending:   :created_at,
+      queued:    :queued_at,
+      running:   :started_at,
       completed: :finalized_at,
-      aborted: :finalized_at
+      aborted:   :finalized_at
     }
 
-    ATTRIBUTE_NAMES = [:type, :name, :queue, :status, :dependencies, :result, :error] | TIME_TRACKING_MAP.values.uniq
+    ATTRIBUTE_NAMES = [:type, :name, :queue, :status, :dependencies, :data, :result, :error] | TIME_TRACKING_MAP.values.uniq
 
     attr_reader :id
 
@@ -104,6 +104,10 @@ module Asynchronic
       self.class.create @environment, type, params.merge(id: id[:processes][processes.count])
     end
 
+    def set(key, value)
+      self.data = self.data.merge key => value
+    end
+
     def self.create(environment, type, params={})
       id = params.delete(:id) || SecureRandom.uuid
 
@@ -115,6 +119,7 @@ module Asynchronic
         self.queue = params.delete(:queue) || type.queue || parent_queue
         self.dependencies = Array(params.delete(:dependencies)) | Array(params.delete(:dependency)) | infer_dependencies(params)
         self.params = params
+        self.data = {}
         pending!
       end
     end

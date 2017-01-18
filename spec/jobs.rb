@@ -168,6 +168,7 @@ class WorkerJob < Asynchronic::Job
   end
 end
 
+
 class ForwardReferenceJob < Asynchronic::Job
   def call
     async BuildReferenceJob
@@ -195,6 +196,7 @@ class ForwardReferenceJob < Asynchronic::Job
   end
 end
 
+
 class WithRetriesJob < Asynchronic::Job
   def call
     @counter = 0
@@ -206,7 +208,8 @@ class WithRetriesJob < Asynchronic::Job
   end
 end
 
-class NestedJobWithDifferentsQueues < Asynchronic::Job
+
+class NestedJobWithDifferentsQueuesJob < Asynchronic::Job
   def call
     async Level1, input: params[:input]
     result Level1
@@ -224,5 +227,14 @@ class NestedJobWithDifferentsQueues < Asynchronic::Job
         params[:input] + 1
       end
     end
+  end
+end
+
+
+class DataJob < Asynchronic::Job
+  def call
+    set :text, "Input was #{params[:input]}"
+    set :value, params[:input]
+    nil
   end
 end
