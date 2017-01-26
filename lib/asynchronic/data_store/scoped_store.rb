@@ -30,6 +30,10 @@ module Asynchronic
           map { |k| Key.new(k).remove_first @scope.sections.count }
       end
 
+      def synchronize(key, &block)
+        data_store.synchronize(key, &block)
+      end
+
       def connection_args
         [
           {

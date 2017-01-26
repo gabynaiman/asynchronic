@@ -2,6 +2,9 @@ module Asynchronic
   module DataStore
     class Redis
 
+      TIMEOUT = 0.001
+      LOCKED = 'locked'
+
       include Helper
 
       def initialize(scope, *args)
@@ -27,6 +30,15 @@ module Asynchronic
 
       def keys
         @connection.keys(@scope['*']).map { |k| Key.new(k).remove_first }
+      end
+
+      def synchronize(key)
+        while @connection.getset(@scope[key][LOCKED], LOCKED) == LOCKED
+          sleep TIMEOUT
+        end
+        yield
+      ensure
+        @connection.del @scope[key][LOCKED]
       end
 
       def connection_args

@@ -90,5 +90,21 @@ module DataStoreExamples
 
     no_lazy_store[:key].must_equal 2
   end
+
+  it 'Synchronization' do
+    sum = 0
+    threads = 1.upto(100).map do |i|
+      Thread.new do
+        data_store.synchronize('xxx') do
+          temp = sum
+          sleep 0
+          sum = temp + 1
+        end
+      end
+    end
+    threads.each(&:join)
+      
+    sum.must_equal 100
+  end
   
 end

@@ -7,6 +7,7 @@ module Asynchronic
       def initialize(hash={})
         @hash = {}
         @mutex = Mutex.new
+        @keys_mutex = Hash.new { |h,k| h[k] = Mutex.new }
         self.class.connections[object_id] = self
       end
 
@@ -24,6 +25,10 @@ module Asynchronic
 
       def keys
         @hash.keys.map { |k| Key.new k }
+      end
+
+      def synchronize(key, &block)
+        @keys_mutex[key].synchronize &block
       end
 
       def connection_args

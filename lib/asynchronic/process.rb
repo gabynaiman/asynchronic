@@ -85,19 +85,21 @@ module Asynchronic
     end
 
     def wakeup
-      if waiting?
-        if processes.any?(&:aborted?)
-          abort! Error.new "Error caused by #{processes.select(&:aborted?).map{|p| p.name}.join(', ')}"
-        elsif processes.all?(&:completed?)
-          completed!
-        else
-          processes.each do |p|
-            p.enqueue if p.ready?
+      data_store.synchronize(id) do
+        if waiting?
+          if processes.any?(&:aborted?)
+            abort! Error.new "Error caused by #{processes.select(&:aborted?).map{|p| p.name}.join(', ')}"
+          elsif processes.all?(&:completed?)
+            completed!
+          else
+            processes.each do |p|
+              p.enqueue if p.ready?
+            end
           end
         end
-      end
 
-      parent.wakeup if parent && finalized?
+        parent.wakeup if parent && finalized?
+      end
     end
 
     def nest(type, params={})
