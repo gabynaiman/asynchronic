@@ -85,21 +85,15 @@ module Asynchronic
     end
 
     def wakeup
-      data_store.synchronize(id) do
-        if waiting?
-          if processes.any?(&:aborted?)
-            abort! Error.new "Error caused by #{processes.select(&:aborted?).map{|p| p.name}.join(', ')}"
-          elsif processes.all?(&:completed?)
-            completed!
-          else
-            processes.each do |p|
-              p.enqueue if p.ready?
-            end
-          end
-        end
-
-        parent.wakeup if parent && finalized?
+      Asynchronic.logger.info('Asynchronic') { "Wakeup started #{type} (#{id})" }
+      if environment.queue_engine.asynchronic?
+        data_store.synchronize(id) { wakeup_children }
+      else
+        wakeup_children
       end
+      Asynchronic.logger.info('Asynchronic') { "Wakeup finalized #{type} (#{id})" }
+      
+      parent.wakeup if parent && finalized?
     end
 
     def nest(type, params={})
@@ -179,6 +173,20 @@ module Asynchronic
       Asynchronic.logger.error('Asynchronic') { message }
       Asynchronic.retry_execution(self.class, 'abort') do
         abort! ex
+      end
+    end
+
+    def wakeup_children
+      if waiting?
+        if processes.any?(&:aborted?)
+          abort! Error.new "Error caused by #{processes.select(&:aborted?).map{|p| p.name}.join(', ')}"
+        elsif processes.all?(&:completed?)
+          completed!
+        else
+          processes.each do |p|
+            p.enqueue if p.ready?
+          end
+        end
       end
     end
 

@@ -31,6 +31,10 @@ module Asynchronic
         Listener.new
       end
 
+      def asynchronic?
+        true
+      end
+
       private
 
       def redis

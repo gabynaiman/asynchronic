@@ -29,6 +29,9 @@ module Asynchronic
         Listener.new
       end
 
+      def asynchronic?
+        true
+      end
 
       class Queue
 

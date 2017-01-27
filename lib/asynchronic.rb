@@ -35,7 +35,7 @@ module Asynchronic
     begin
       result = yield
     rescue Exception => ex
-      logger.info(a_class) { "Retrying #{message}. ERROR: #{ex.message}" }
+      logger.error(a_class) { "Retrying #{message}. ERROR: #{ex.message}" }
       sleep RETRY_TIMEOUT
       retry
     end

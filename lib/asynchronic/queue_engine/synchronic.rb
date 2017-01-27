@@ -25,6 +25,9 @@ module Asynchronic
         @stubs[job] = block
       end
 
+      def asynchronic?
+        false
+      end
 
       class Queue
 

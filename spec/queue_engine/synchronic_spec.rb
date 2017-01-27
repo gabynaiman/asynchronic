@@ -23,5 +23,12 @@ describe Asynchronic::QueueEngine::Synchronic do
     process = Asynchronic[pid]
     process.result.must_equal 20
   end
+
+  it 'Graph job' do
+    pid = GraphJob.enqueue input: 100
+    process = Asynchronic[pid]
+    process.must_be_completed
+    process.result.must_equal '10%' => 20, '20%' => 40
+  end
   
 end
