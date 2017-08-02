@@ -238,3 +238,74 @@ class DataJob < Asynchronic::Job
     nil
   end
 end
+
+
+class NestedJobWithErrorInChild < Asynchronic::Job
+
+  def call
+    async Child_1
+    async Child_2
+    async Child_3
+    nil
+  end
+
+  class Child_1 < Asynchronic::Job
+    def call
+      async Child_1_1
+      async Child_1_2
+      nil
+    end
+
+    class Child_1_1 < Asynchronic::Job
+      def call
+        nil
+      end
+    end
+
+    class Child_1_2 < Asynchronic::Job
+      def call
+        nil
+      end
+    end
+  end
+
+  class Child_2 < Asynchronic::Job
+    def call
+      async Child_2_1
+      async Child_2_2
+      async Child_2_3
+      nil
+    end
+
+    class Child_2_1 < Asynchronic::Job
+      def call
+        nil
+      end
+    end
+
+    class Child_2_2 < Asynchronic::Job
+      def call
+        raise "Error in Child_2_2"
+      end
+    end
+
+    class Child_2_3 < Asynchronic::Job
+      def call
+        nil
+      end
+    end
+  end
+
+  class Child_3 < Asynchronic::Job
+    def call
+      async Child_3_1
+      nil
+    end
+
+    class Child_3_1 < Asynchronic::Job
+      def call
+        nil
+      end
+    end
+  end
+end

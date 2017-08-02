@@ -8,6 +8,10 @@ describe Asynchronic::QueueEngine::Synchronic do
     end
   end
 
+  after do
+    Asynchronic.environment.data_store.clear
+  end
+
   it 'Original job' do
     pid = BasicJob.enqueue input: 1
     process = Asynchronic[pid]

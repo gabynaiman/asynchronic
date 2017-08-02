@@ -67,6 +67,16 @@ module Asynchronic
       Process.new environment, id.remove_last(2) if id.nested?
     end
 
+    def real_error
+      childs = processes
+
+      return error.message if childs.empty?
+
+      childs.each do |child|
+        return child.real_error if child.error
+      end
+    end
+
     def dependencies
       return [] unless parent
       data_store[:dependencies].map { |d| parent[d] }
