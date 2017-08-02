@@ -4,6 +4,11 @@ module WorkerExamples
   let(:queue_name) { :test_worker }
   let(:queue) { env.queue queue_name }
 
+  after do
+    data_store.clear
+    queue_engine.clear
+  end
+
   def enqueue_processes
     processes = 5.times.map do
       env.create_process(WorkerJob, queue: :test_worker).tap(&:enqueue)

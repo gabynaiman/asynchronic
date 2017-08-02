@@ -462,4 +462,18 @@ module LifeCycleExamples
     process.data.must_equal text: 'Input was 1', value: 1
   end
 
+  it 'NestedJobWithErrorInChild' do
+    process = create NestedJobWithErrorInChild, queue: :test_queue
+
+    process.enqueue 
+
+    10.times do
+      execute queue_engine[:test_queue] unless process.status == :aborted
+    end
+
+    process.must_be_aborted
+
+    process.real_error.must_equal "Error in Child_2_2"
+  end
+
 end
