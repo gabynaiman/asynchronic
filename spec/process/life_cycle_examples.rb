@@ -476,4 +476,14 @@ module LifeCycleExamples
     process.real_error.must_equal "Error in Child_2_2"
   end
 
+  it 'NestedJobWithErrorInParent' do
+    process = create NestedJobWithErrorInParent, queue: :test_queue
+
+    process.enqueue 
+
+    execute queue_engine[:test_queue]
+ 
+    process.real_error.must_equal "Error in parent"
+  end
+
 end
