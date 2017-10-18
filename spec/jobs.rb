@@ -240,6 +240,21 @@ class DataJob < Asynchronic::Job
 end
 
 
+class NestedJobWithErrorInParent< Asynchronic::Job
+  def call
+    async Child_1
+    raise "Error in parent"
+    nil
+  end
+
+  class Child_1 < Asynchronic::Job
+    def call
+      nil
+    end
+  end
+end
+
+
 class NestedJobWithErrorInChild < Asynchronic::Job
 
   def call

@@ -68,13 +68,13 @@ module Asynchronic
     end
 
     def real_error
-      childs = processes
+      return nil unless error
 
-      return error.message if childs.empty?
-
-      childs.each do |child|
+      processes.each do |child|
         return child.real_error if child.error
       end
+
+      error.message
     end
 
     def dependencies
