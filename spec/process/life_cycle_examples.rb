@@ -462,28 +462,104 @@ module LifeCycleExamples
     process.data.must_equal text: 'Input was 1', value: 1
   end
 
-  it 'NestedJobWithErrorInChild' do
-    process = create NestedJobWithErrorInChild, queue: :test_queue
+  it 'Nested job with error in child' do
+    process = create NestedJobWithErrorInChildJob
 
     process.enqueue 
 
     Timeout.timeout(1) do
       until process.status == :aborted
-        execute queue_engine[:test_queue]
+        execute queue
       end
     end
 
     process.real_error.must_equal "Error in Child_2_2"
   end
 
-  it 'NestedJobWithErrorInParent' do
-    process = create NestedJobWithErrorInParent, queue: :test_queue
+  it 'Nested job with error in parent' do
+    process = create NestedJobWithErrorInParentJob
 
     process.enqueue 
 
-    execute queue_engine[:test_queue]
+    execute queue
  
     process.real_error.must_equal "Error in parent"
+  end
+
+  it 'Abort queued afert error' do
+    process = create AbortQueuedAfertErrorJob
+
+    process.enqueue 
+
+    execute queue
+
+    process.full_status.must_equal AbortQueuedAfertErrorJob => :waiting,
+                                   AbortQueuedAfertErrorJob::Child_1 => :queued,
+                                   AbortQueuedAfertErrorJob::Child_2 => :queued,
+                                   AbortQueuedAfertErrorJob::Child_3 => :queued,
+                                   AbortQueuedAfertErrorJob::Child_4 => :queued
+
+    execute queue
+
+    process.full_status.must_equal AbortQueuedAfertErrorJob => :waiting,
+                                   AbortQueuedAfertErrorJob::Child_1 => :waiting,
+                                   'Child_1_1' => :queued,
+                                   'Child_1_2' => :queued,
+                                   AbortQueuedAfertErrorJob::Child_2 => :queued,
+                                   AbortQueuedAfertErrorJob::Child_3 => :queued,
+                                   AbortQueuedAfertErrorJob::Child_4 => :queued
+
+    execute queue
+
+    process.full_status.must_equal AbortQueuedAfertErrorJob => :waiting,
+                                   AbortQueuedAfertErrorJob::Child_1 => :waiting,
+                                   'Child_1_1' => :queued,
+                                   'Child_1_2' => :queued,
+                                   AbortQueuedAfertErrorJob::Child_2 => :completed,
+                                   AbortQueuedAfertErrorJob::Child_3 => :queued,
+                                   AbortQueuedAfertErrorJob::Child_4 => :queued
+
+    execute queue
+
+    process.full_status.must_equal AbortQueuedAfertErrorJob => :aborted,
+                                   AbortQueuedAfertErrorJob::Child_1 => :waiting,
+                                   'Child_1_1' => :queued,
+                                   'Child_1_2' => :queued,
+                                   AbortQueuedAfertErrorJob::Child_2 => :completed,
+                                   AbortQueuedAfertErrorJob::Child_3 => :aborted,
+                                   AbortQueuedAfertErrorJob::Child_4 => :queued
+
+    execute queue
+
+    process.full_status.must_equal AbortQueuedAfertErrorJob => :aborted,
+                                   AbortQueuedAfertErrorJob::Child_1 => :waiting,
+                                   'Child_1_1' => :queued,
+                                   'Child_1_2' => :queued,
+                                   AbortQueuedAfertErrorJob::Child_2 => :completed,
+                                   AbortQueuedAfertErrorJob::Child_3 => :aborted,
+                                   AbortQueuedAfertErrorJob::Child_4 => :aborted
+
+    execute queue
+
+    process.full_status.must_equal AbortQueuedAfertErrorJob => :aborted,
+                                   AbortQueuedAfertErrorJob::Child_1 => :aborted,
+                                   'Child_1_1' => :aborted,
+                                   'Child_1_2' => :queued,
+                                   AbortQueuedAfertErrorJob::Child_2 => :completed,
+                                   AbortQueuedAfertErrorJob::Child_3 => :aborted,
+                                   AbortQueuedAfertErrorJob::Child_4 => :aborted
+
+    execute queue
+
+    process.full_status.must_equal AbortQueuedAfertErrorJob => :aborted,
+                                   AbortQueuedAfertErrorJob::Child_1 => :aborted,
+                                   'Child_1_1' => :aborted,
+                                   'Child_1_2' => :aborted,
+                                   AbortQueuedAfertErrorJob::Child_2 => :completed,
+                                   AbortQueuedAfertErrorJob::Child_3 => :aborted,
+                                   AbortQueuedAfertErrorJob::Child_4 => :aborted
+
+    process.real_error.must_equal 'Forced error'
   end
 
 end

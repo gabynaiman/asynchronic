@@ -240,10 +240,10 @@ class DataJob < Asynchronic::Job
 end
 
 
-class NestedJobWithErrorInParent< Asynchronic::Job
+class NestedJobWithErrorInParentJob < Asynchronic::Job
   def call
     async Child_1
-    raise "Error in parent"
+    raise 'Error in parent'
     nil
   end
 
@@ -255,7 +255,7 @@ class NestedJobWithErrorInParent< Asynchronic::Job
 end
 
 
-class NestedJobWithErrorInChild < Asynchronic::Job
+class NestedJobWithErrorInChildJob < Asynchronic::Job
 
   def call
     async Child_1
@@ -300,7 +300,7 @@ class NestedJobWithErrorInChild < Asynchronic::Job
 
     class Child_2_2 < Asynchronic::Job
       def call
-        raise "Error in Child_2_2"
+        raise 'Error in Child_2_2'
       end
     end
 
@@ -321,6 +321,43 @@ class NestedJobWithErrorInChild < Asynchronic::Job
       def call
         nil
       end
+    end
+  end
+end
+
+
+class AbortQueuedAfertErrorJob < Asynchronic::Job
+  def call
+    async Child_1
+    async Child_2
+    async Child_3
+    async Child_4
+    nil
+  end
+
+  class Child_1 < Asynchronic::Job
+    def call
+      1.upto(2) do |i|
+        async Child_2, alias: "Child_1_#{i}"
+      end
+    end
+  end
+
+  class Child_2 < Asynchronic::Job
+    def call
+      nil
+    end
+  end
+
+  class Child_3 < Asynchronic::Job
+    def call
+      raise 'Forced error'
+    end
+  end
+
+  class Child_4 < Asynchronic::Job
+    def call
+      nil
     end
   end
 end

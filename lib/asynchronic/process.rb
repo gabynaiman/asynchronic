@@ -41,6 +41,12 @@ module Asynchronic
       completed? || aborted?
     end
 
+    def full_status
+      processes.each_with_object(name => status) do |process, hash|
+        hash.update(process.full_status)
+      end
+    end
+
     def params
       data_store.scoped(:params).no_lazy.readonly
     end
@@ -65,6 +71,10 @@ module Asynchronic
 
     def parent
       Process.new environment, id.remove_last(2) if id.nested?
+    end
+
+    def root
+      id.nested? ? Process.new(environment, id.sections.first) : self
     end
 
     def real_error
@@ -107,7 +117,7 @@ module Asynchronic
     end
 
     def nest(type, params={})
-      self.class.create @environment, type, params.merge(id: id[:processes][processes.count])
+      self.class.create environment, type, params.merge(id: id[:processes][processes.count])
     end
 
     def set(key, value)
@@ -139,9 +149,7 @@ module Asynchronic
 
     private
 
-    def environment
-      @environment
-    end
+    attr_reader :environment
 
     def data_store
       @data_store ||= environment.data_store.scoped id
@@ -169,15 +177,19 @@ module Asynchronic
       end
     end
 
-    def abort!(exception)
-      self.error = Error.new exception
+    def abort!(exception=nil)
+      self.error = Error.new exception if exception
       aborted!
     end
 
     def run
-      running!
-      self.result = job.call
-      waiting!
+      if root.aborted?
+        abort!
+      else
+        running!
+        self.result = job.call
+        waiting!
+      end
     rescue Exception => ex
       message = "Failed process #{type} (#{id})\n#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
       Asynchronic.logger.error('Asynchronic') { message }
@@ -189,7 +201,9 @@ module Asynchronic
     def wakeup_children
       if waiting?
         if processes.any?(&:aborted?)
-          abort! Error.new "Error caused by #{processes.select(&:aborted?).map{|p| p.name}.join(', ')}"
+          childs_with_errors = processes.select(&:error)
+          error = childs_with_errors.any? ? "Error caused by #{childs_with_errors.map(&:name).join(', ')}" : nil
+          abort! error
         elsif processes.all?(&:completed?)
           completed!
         else
