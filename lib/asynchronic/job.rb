@@ -25,13 +25,15 @@ module Asynchronic
 
     private
 
+    attr_reader :process
+
     def async(type, params={})
-      @process.nest type, params
+      process.nest type, params
       nil
     end
 
     def set(key, value)
-      @process.set key, value
+      process.set key, value
     end
 
     def retry_when(exceptions, interval=1)
