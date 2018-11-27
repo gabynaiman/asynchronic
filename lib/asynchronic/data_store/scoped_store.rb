@@ -9,7 +9,7 @@ module Asynchronic
       
       def initialize(data_store, scope)
         @data_store = data_store
-        @scope = Key.new scope
+        @scope = Key[scope]
       end
 
       def [](key)
@@ -24,10 +24,14 @@ module Asynchronic
         @data_store.delete @scope[key]
       end
 
+      def delete_cascade
+        @data_store.delete_cascade @scope
+      end
+
       def keys
         @data_store.keys.
           select { |k| k.start_with? @scope[''] }.
-          map { |k| Key.new(k).remove_first @scope.sections.count }
+          map { |k| Key[k].remove_first @scope.sections.count }
       end
 
       def synchronize(key, &block)

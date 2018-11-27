@@ -8,8 +8,8 @@ module Asynchronic
       include Helper
 
       def initialize(scope, *args)
-        @scope = Key.new scope
-        @connection = ::Redis.new *args
+        @scope = Key[scope]
+        @connection = ::Redis.new(*args)
       end
 
       def [](key)
@@ -28,8 +28,13 @@ module Asynchronic
         @connection.del @scope[key]
       end
 
+      def delete_cascade(key)
+        @connection.del @scope[key]
+        @connection.keys(@scope[key]['*']).each { |k| @connection.del k }
+      end
+
       def keys
-        @connection.keys(@scope['*']).map { |k| Key.new(k).remove_first }
+        @connection.keys(@scope['*']).map { |k| Key[k].remove_first }
       end
 
       def synchronize(key)
@@ -46,7 +51,7 @@ module Asynchronic
       end
 
       def self.connect(*args)
-        new *args
+        new(*args)
       end
       
     end

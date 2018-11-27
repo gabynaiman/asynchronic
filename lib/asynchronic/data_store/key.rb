@@ -3,6 +3,10 @@ module Asynchronic
     class Key < String
     
       SEPARATOR = '|'
+
+      def self.[](key)
+        new key
+      end
       
       def initialize(key)
         super key.to_s

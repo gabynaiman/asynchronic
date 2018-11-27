@@ -23,12 +23,17 @@ module Asynchronic
         @hash.delete key.to_s
       end
 
+      def delete_cascade(key)
+        keys = self.keys.select { |k| k.sections.first == key }
+        keys.each { |k| delete k }
+      end
+
       def keys
-        @hash.keys.map { |k| Key.new k }
+        @hash.keys.map { |k| Key[k] }
       end
 
       def synchronize(key, &block)
-        @keys_mutex[key].synchronize &block
+        @keys_mutex[key].synchronize(&block)
       end
 
       def connection_args

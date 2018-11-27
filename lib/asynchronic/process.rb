@@ -19,7 +19,7 @@ module Asynchronic
 
     def initialize(environment, id, &block)
       @environment = environment
-      @id = DataStore::Key.new id
+      @id = DataStore::Key[id]
       instance_eval(&block) if block_given?
     end
 
@@ -45,6 +45,10 @@ module Asynchronic
 
     def cancel!
       abort! CANCELED_ERROR_MESSAGE
+    end
+
+    def destroy
+      data_store.delete_cascade
     end
 
     def full_status

@@ -21,6 +21,23 @@ module DataStoreExamples
     data_store[:key].must_be_nil
   end
 
+  it 'Delete cascade' do
+    data_store[Key[:key_1]] = 1
+    data_store[Key[:key_1][:key_1_1]] = 2
+    data_store[Key[:key_1][:key_1_2]] = 3
+    data_store[Key[:key_2]] = 4
+    data_store[Key[:key_2][:key_2_1]] = 5
+    data_store[Key[:key_2][:key_2_2]] = 6
+
+    data_store.delete_cascade Key[:key_1]
+
+    data_store.keys.sort.must_equal [
+      Key[:key_2], 
+      Key[:key_2][:key_2_1], 
+      Key[:key_2][:key_2_2]
+    ]
+  end
+
   it 'Each' do
     data_store[:a] = 1
     data_store[:b] = 2

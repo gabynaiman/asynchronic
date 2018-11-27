@@ -593,4 +593,24 @@ module LifeCycleExamples
                                    NestedJob::Level1::Level2 => :aborted
   end
 
+  it 'Remove process' do
+    process_1 = create AliasJob
+    process_2 = create AliasJob
+
+    process_1.enqueue
+
+    execute queue
+
+    pid_1 = process_1.id
+    pid_2 = process_2.id
+
+    data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 37
+    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 7
+
+    process_1.destroy
+
+    data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 0
+    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 7
+  end
+
 end
