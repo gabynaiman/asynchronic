@@ -13,12 +13,14 @@ module Asynchronic
 
     ATTRIBUTE_NAMES = [:type, :name, :queue, :status, :dependencies, :data, :result, :error] | TIME_TRACKING_MAP.values.uniq
 
+    CANCELED_ERROR_MESSAGE = 'Canceled'
+
     attr_reader :id
 
     def initialize(environment, id, &block)
       @environment = environment
       @id = DataStore::Key.new id
-      instance_eval &block if block_given?
+      instance_eval(&block) if block_given?
     end
 
     ATTRIBUTE_NAMES.each do |attribute|
@@ -39,6 +41,10 @@ module Asynchronic
 
     def finalized?
       completed? || aborted?
+    end
+
+    def cancel!
+      abort! CANCELED_ERROR_MESSAGE
     end
 
     def full_status

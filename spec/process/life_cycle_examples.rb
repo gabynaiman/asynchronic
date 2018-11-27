@@ -562,4 +562,35 @@ module LifeCycleExamples
     process.real_error.must_equal 'Forced error'
   end
 
+  it 'Manual abort' do
+    process = create NestedJob, input: 10
+
+    process.enqueue
+
+    execute queue
+
+    process.full_status.must_equal NestedJob => :waiting, 
+                                   NestedJob::Level1 => :queued
+
+    execute queue
+
+    process.full_status.must_equal NestedJob => :waiting, 
+                                   NestedJob::Level1 => :waiting, 
+                                   NestedJob::Level1::Level2 => :queued
+
+    process.cancel!
+
+    process.real_error.must_equal Asynchronic::Process::CANCELED_ERROR_MESSAGE
+
+    process.full_status.must_equal NestedJob => :aborted, 
+                                   NestedJob::Level1 => :waiting, 
+                                   NestedJob::Level1::Level2 => :queued
+
+    execute queue
+
+    process.full_status.must_equal NestedJob => :aborted, 
+                                   NestedJob::Level1 => :aborted, 
+                                   NestedJob::Level1::Level2 => :aborted
+  end
+
 end
