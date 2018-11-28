@@ -70,7 +70,7 @@ module Asynchronic
     end
 
     def [](process_name)
-      processes.detect { |p| p.name == process_name }
+      processes.detect { |p| p.name == process_name.to_s }
     end
 
     def processes
@@ -141,7 +141,7 @@ module Asynchronic
 
       new(environment, id) do
         self.type = type
-        self.name = params.delete(:alias) || type
+        self.name = (params.delete(:alias) || type).to_s
         self.queue = params.delete(:queue) || type.queue || parent_queue
         self.dependencies = Array(params.delete(:dependencies)) | Array(params.delete(:dependency)) | infer_dependencies(params)
         self.params = params
