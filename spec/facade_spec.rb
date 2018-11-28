@@ -60,4 +60,8 @@ describe Asynchronic, 'Facade' do
     end
   end
 
+  it 'Garbage collector' do
+    Asynchronic.garbage_collector.must_be_instance_of Asynchronic::GarbageCollector
+  end
+
 end

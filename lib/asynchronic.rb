@@ -5,8 +5,9 @@ require 'ost'
 require 'class_config'
 require 'transparent_proxy'
 require 'logger'
+require 'multi_require'
 
-Dir.glob(File.expand_path('asynchronic/**/*.rb', File.dirname(__FILE__))).sort.each { |f| require f }
+MultiRequire.require_relative_pattern 'asynchronic/**/*.rb'
 
 module Asynchronic
 
@@ -16,9 +17,9 @@ module Asynchronic
   attr_config :queue_engine, QueueEngine::InMemory.new
   attr_config :data_store, DataStore::InMemory.new
   attr_config :logger, Logger.new($stdout)
+  attr_config :retry_timeout, 30
+  attr_config :garbage_collector_timeout, 30
 
-  RETRY_TIMEOUT = 30
-  
   def self.environment
     Environment.new queue_engine, data_store
   end
@@ -31,12 +32,16 @@ module Asynchronic
     environment.processes
   end
 
-  def self.retry_execution(a_class, message)
+  def self.garbage_collector
+    @garbage_collector ||= GarbageCollector.new environment, garbage_collector_timeout
+  end
+
+  def self.retry_execution(klass, message)
     begin
       result = yield
     rescue Exception => ex
-      logger.error(a_class) { "Retrying #{message}. ERROR: #{ex.message}" }
-      sleep RETRY_TIMEOUT
+      logger.error(klass) { "Retrying #{message}. ERROR: #{ex.message}" }
+      sleep retry_timeout
       retry
     end
     result

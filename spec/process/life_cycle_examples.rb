@@ -613,4 +613,45 @@ module LifeCycleExamples
     data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 7
   end
 
+  it 'Garbage collector' do
+    process_1 = create AliasJob
+    process_1.enqueue
+    4.times { execute queue }
+    
+    process_2 = create AliasJob
+    process_2.enqueue
+    execute queue
+
+    pid_1 = process_1.id
+    pid_2 = process_2.id
+
+    process_1.must_be_completed
+    process_2.must_be_waiting
+
+    data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 49
+    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 37
+
+    gc = Asynchronic::GarbageCollector.new env, 0.001
+    
+    gc.add_condition('Completed', &:completed?)
+    gc.add_condition('Waiting', &:waiting?)
+    gc.add_condition('Exception') { raise 'Invalid condition' }
+
+    gc.conditions_names.must_equal ['Completed', 'Waiting', 'Exception']
+
+    gc.remove_condition 'Waiting'
+    
+    gc.conditions_names.must_equal ['Completed', 'Exception']
+
+    Thread.new do
+      sleep 0.01
+      gc.stop
+    end
+
+    gc.start
+
+    data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 0
+    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 37
+  end
+
 end
