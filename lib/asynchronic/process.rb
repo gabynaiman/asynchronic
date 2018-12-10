@@ -210,14 +210,15 @@ module Asynchronic
 
     def wakeup_children
       if waiting?
-        if processes.any?(&:aborted?)
-          childs_with_errors = processes.select(&:error)
+        children = processes # Cached child processes
+        if children.any?(&:aborted?)
+          childs_with_errors = children.select(&:error)
           error = childs_with_errors.any? ? "Error caused by #{childs_with_errors.map(&:name).join(', ')}" : nil
           abort! error
-        elsif processes.all?(&:completed?)
+        elsif children.all?(&:completed?)
           completed!
         else
-          processes.each do |p|
+          children.each do |p|
             p.enqueue if p.ready?
           end
         end
