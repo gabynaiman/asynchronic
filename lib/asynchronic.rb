@@ -19,6 +19,7 @@ module Asynchronic
   attr_config :logger, Logger.new($stdout)
   attr_config :retry_timeout, 30
   attr_config :garbage_collector_timeout, 30
+  attr_config :redis_data_store_sync_timeout, 0.01
 
   def self.environment
     Environment.new queue_engine, data_store

@@ -2,7 +2,6 @@ module Asynchronic
   module DataStore
     class Redis
 
-      TIMEOUT = 0.001
       LOCKED = 'locked'
 
       include Helper
@@ -39,7 +38,7 @@ module Asynchronic
 
       def synchronize(key)
         while @connection.getset(@scope[key][LOCKED], LOCKED) == LOCKED
-          sleep TIMEOUT
+          sleep Asynchronic.redis_data_store_sync_timeout
         end
         yield
       ensure
