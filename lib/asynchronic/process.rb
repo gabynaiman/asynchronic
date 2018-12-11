@@ -98,8 +98,13 @@ module Asynchronic
     end
 
     def dependencies
-      return [] unless parent
-      data_store[:dependencies].map { |d| parent[d] }
+      return [] if parent.nil? || data_store[:dependencies].empty?
+      
+      parent_processes = parent.processes.each_with_object({}) do |process, hash|
+        hash[process.name] = process
+      end
+      
+      data_store[:dependencies].map { |d| parent_processes[d.to_s] }
     end
 
     def enqueue
