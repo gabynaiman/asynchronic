@@ -654,4 +654,40 @@ module LifeCycleExamples
     data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 37
   end
 
+  it 'Before finalize hook when completed' do
+    process = create BeforeFinalizeCompletedJob
+
+    process.must_be_initialized
+    queue.must_be_empty
+
+    process.enqueue
+
+    process.must_be_queued
+    queue.must_enqueued process
+
+    execute queue
+
+    process.must_be_completed
+    process.get(:key).must_equal 10
+    queue.must_be_empty
+  end
+
+  it 'Before finalize hook when aborted' do
+    process = create BeforeFinalizeAbortedJob
+
+    process.must_be_initialized
+    queue.must_be_empty
+
+    process.enqueue
+
+    process.must_be_queued
+    queue.must_enqueued process
+
+    execute queue
+
+    process.must_be_aborted
+    process.get(:key).must_equal 2
+    queue.must_be_empty
+  end
+
 end

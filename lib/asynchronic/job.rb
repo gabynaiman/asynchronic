@@ -32,6 +32,10 @@ module Asynchronic
       nil
     end
 
+    def get(key)
+      process.get key
+    end
+
     def set(key, value)
       process.set key, value
     end

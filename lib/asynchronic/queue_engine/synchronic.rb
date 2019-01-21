@@ -64,6 +64,9 @@ module Asynchronic
           @block.call @process
         end
 
+        def before_finalize
+        end
+
       end
 
     end

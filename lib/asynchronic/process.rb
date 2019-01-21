@@ -66,7 +66,7 @@ module Asynchronic
     end
 
     def job
-      type.new self
+      @job ||= type.new self
     end
 
     def [](process_name)
@@ -135,6 +135,10 @@ module Asynchronic
       self.class.create environment, type, params.merge(id: id[:processes][processes.count])
     end
 
+    def get(key)
+      data[key]
+    end
+
     def set(key, value)
       self.data = self.data.merge key => value
     end
@@ -188,6 +192,7 @@ module Asynchronic
 
     STATUSES.each do |status|
       define_method "#{status}!" do
+        job.before_finalize if [:completed, :aborted].include?(status) && job.respond_to?(:before_finalize)
         self.status = status
       end
     end

@@ -361,3 +361,25 @@ class AbortQueuedAfertErrorJob < Asynchronic::Job
     end
   end
 end
+
+
+class BeforeFinalizeCompletedJob < Asynchronic::Job
+  def call
+    set :key, 0
+  end
+
+  def before_finalize
+    set :key, get(:key) + 10
+  end
+end
+
+class BeforeFinalizeAbortedJob < Asynchronic::Job
+  def call
+    set :key, 1
+    raise 'Forced error'
+  end
+
+  def before_finalize
+    set :key, get(:key) + 1
+  end
+end
