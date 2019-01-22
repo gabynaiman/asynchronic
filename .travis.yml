@@ -21,7 +21,7 @@ matrix:
     - rvm: jruby-head
 
 before_install:
-  - gem uninstall bundler '>= 2.0.0'
+  - gem uninstall bundler -v '>= 2.0.0'
   - gem install bundler -v "< 2"
 
 services:
