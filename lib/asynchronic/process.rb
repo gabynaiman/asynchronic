@@ -11,7 +11,7 @@ module Asynchronic
       aborted:   :finalized_at
     }
 
-    ATTRIBUTE_NAMES = [:type, :name, :queue, :status, :dependencies, :data, :result, :error] | TIME_TRACKING_MAP.values.uniq
+    ATTRIBUTE_NAMES = [:type, :name, :queue, :status, :dependencies, :data, :result, :wakeup_childrens_enqueued, :error] | TIME_TRACKING_MAP.values.uniq
 
     CANCELED_ERROR_MESSAGE = 'Canceled'
 
@@ -33,6 +33,10 @@ module Asynchronic
       define_method "#{status}?" do
         self.status == status
       end
+    end
+
+    def wakeup_childrens_enqueued?
+      self.wakeup_childrens_enqueued
     end
 
     def ready?
@@ -120,15 +124,23 @@ module Asynchronic
     end
 
     def wakeup
-      Asynchronic.logger.info('Asynchronic') { "Wakeup started #{type} (#{id})" }
-      if environment.queue_engine.asynchronic?
-        data_store.synchronize(id) { wakeup_children }
-      else
-        wakeup_children
-      end
-      Asynchronic.logger.info('Asynchronic') { "Wakeup finalized #{type} (#{id})" }
-      
-      parent.wakeup if parent && finalized?
+        Asynchronic.logger.info('Asynchronic') { "Wakeup started #{type} (#{id})" }
+
+        if environment.queue_engine.asynchronic?
+          self.wakeup_childrens_enqueued = true
+          data_store.synchronize(id) do 
+            self.wakeup_childrens_enqueued = false
+            wakeup_children
+          end
+        else
+          wakeup_children
+        end
+
+        Asynchronic.logger.info('Asynchronic') { "Wakeup finalized #{type} (#{id})" }
+        
+        if parent && finalized?
+          parent.wakeup unless parent.wakeup_childrens_enqueued?
+        end
     end
 
     def nest(type, params={})
@@ -154,6 +166,7 @@ module Asynchronic
         self.queue = params.delete(:queue) || type.queue || parent_queue
         self.dependencies = Array(params.delete(:dependencies)) | Array(params.delete(:dependency)) | infer_dependencies(params)
         self.params = params
+        self.wakeup_childrens_enqueued = false
         self.data = {}
         pending!
       end
