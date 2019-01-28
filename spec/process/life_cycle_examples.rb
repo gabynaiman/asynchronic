@@ -604,13 +604,13 @@ module LifeCycleExamples
     pid_1 = process_1.id
     pid_2 = process_2.id
 
-    data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 37
-    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 7
+    data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 41
+    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 8
 
     process_1.destroy
 
     data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 0
-    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 7
+    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 8
   end
 
   it 'Garbage collector' do
@@ -628,8 +628,8 @@ module LifeCycleExamples
     process_1.must_be_completed
     process_2.must_be_waiting
 
-    data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 49
-    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 37
+    data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 53
+    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 41
 
     gc = Asynchronic::GarbageCollector.new env, 0.001
     
@@ -651,7 +651,7 @@ module LifeCycleExamples
     gc.start
 
     data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 0
-    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 37
+    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 41
   end
 
   it 'Before finalize hook when completed' do
