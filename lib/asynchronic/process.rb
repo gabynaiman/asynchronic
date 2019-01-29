@@ -136,7 +136,7 @@ module Asynchronic
     end
 
     def get(key)
-      data[key]
+      self.data[key]
     end
 
     def set(key, value)
@@ -192,8 +192,13 @@ module Asynchronic
 
     STATUSES.each do |status|
       define_method "#{status}!" do
-        job.before_finalize if [:completed, :aborted].include?(status) && job.respond_to?(:before_finalize)
-        self.status = status
+        begin
+          job.before_finalize if [:completed, :aborted].include?(status) && job.respond_to?(:before_finalize)
+          self.status = status
+        rescue => ex
+          self.error = Error.new exception
+          self.status = :aborted
+        end
       end
     end
 
