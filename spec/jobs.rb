@@ -383,3 +383,15 @@ class BeforeFinalizeAbortedJob < Asynchronic::Job
     set :key, get(:key) + 1
   end
 end
+
+class BeforeFinalizeRaisesExceptionJob < Asynchronic::Job
+
+  def call
+    nil
+  end
+
+  def before_finalize
+    raise 'Before finalize exception'
+  end
+
+end

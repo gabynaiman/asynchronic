@@ -690,4 +690,22 @@ module LifeCycleExamples
     queue.must_be_empty
   end
 
+  it 'Before finalize raises exception and aborts' do
+    process = create BeforeFinalizeRaisesExceptionJob
+
+    process.must_be_initialized
+    queue.must_be_empty
+
+    process.enqueue
+
+    process.must_be_queued
+    queue.must_enqueued process
+
+    execute queue
+
+    process.must_be_aborted
+    process.real_error.must_equal 'Before finalize exception'
+    queue.must_be_empty
+  end
+
 end
