@@ -12,11 +12,11 @@ module Asynchronic
       end
 
       def [](key)
-        @hash[key.to_s]
+        Marshal.load(@hash[key.to_s]) if @hash.key? key.to_s
       end
 
       def []=(key, value)
-        @mutex.synchronize { @hash[key.to_s] = value }
+        @mutex.synchronize { @hash[key.to_s] = Marshal.dump(value) }
       end
 
       def delete(key)
