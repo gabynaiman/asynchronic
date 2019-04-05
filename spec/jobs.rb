@@ -385,7 +385,6 @@ class BeforeFinalizeAbortedJob < Asynchronic::Job
 end
 
 class BeforeFinalizeRaisesExceptionJob < Asynchronic::Job
-
   def call
     nil
   end
@@ -393,5 +392,14 @@ class BeforeFinalizeRaisesExceptionJob < Asynchronic::Job
   def before_finalize
     raise 'Before finalize exception'
   end
+end
 
+class BeforeFinalizeExceptionOnAbortedJob < Asynchronic::Job
+  def call
+    raise 'Job error'
+  end
+
+  def before_finalize
+    raise 'Before finalize error'
+  end
 end

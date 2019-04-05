@@ -708,4 +708,23 @@ module LifeCycleExamples
     queue.must_be_empty
   end
 
+  it 'Before finalize raises exception on aborted job' do
+    process = create BeforeFinalizeExceptionOnAbortedJob
+
+    process.must_be_initialized
+    queue.must_be_empty
+
+    process.enqueue
+
+    process.must_be_queued
+    queue.must_enqueued process
+
+    execute queue
+
+    process.must_be_aborted
+    process.real_error.must_equal 'Job error'
+    queue.must_be_empty
+  end
+
+
 end

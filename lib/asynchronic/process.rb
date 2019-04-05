@@ -196,7 +196,7 @@ module Asynchronic
           job.before_finalize if [:completed, :aborted].include?(status) && job.respond_to?(:before_finalize)
           self.status = status
         rescue Exception => exception
-          self.error = Error.new exception
+          self.error = Error.new exception unless error
           self.status = :aborted
         end
       end
