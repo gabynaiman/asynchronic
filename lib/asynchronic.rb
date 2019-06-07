@@ -6,6 +6,7 @@ require 'class_config'
 require 'transparent_proxy'
 require 'logger'
 require 'multi_require'
+require 'socket'
 
 MultiRequire.require_relative_pattern 'asynchronic/**/*.rb'
 

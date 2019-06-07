@@ -10,17 +10,20 @@ module LifeCycleExamples
   end
 
   def create(type, params={})
-    env.create_process type, params
+    env.create_process(type, params).tap do |process|
+      process.must_be_initialized
+    end
   end
 
   def execute(queue)
-    env.load_process(queue.pop).execute
+    process = env.load_process(queue.pop)
+    process.execute
+    process.must_have_worker_info
   end
 
   it 'Basic' do
     process = create BasicJob, input: 1
 
-    process.must_be_initialized
     process.must_have_params input: 1
     queue.must_be_empty
 
@@ -39,7 +42,6 @@ module LifeCycleExamples
   it 'Sequential' do
     process = create SequentialJob, input: 50
 
-    process.must_be_initialized
     process.must_have_params input: 50
     queue.must_be_empty
 
@@ -77,7 +79,6 @@ module LifeCycleExamples
   it 'Graph' do
     process = create GraphJob, input: 100
 
-    process.must_be_initialized
     process.must_have_params input: 100
     queue.must_be_empty
 
@@ -133,7 +134,6 @@ module LifeCycleExamples
   it 'Parallel' do
     process = create ParallelJob, input: 10, times: 3
 
-    process.must_be_initialized
     process.must_have_params input: 10, times: 3
     queue.must_be_empty
 
@@ -167,7 +167,6 @@ module LifeCycleExamples
   it 'Nested' do
     process = create NestedJob, input: 4
 
-    process.must_be_initialized
     process.must_have_params input: 4
     queue.must_be_empty
 
@@ -207,7 +206,6 @@ module LifeCycleExamples
   it 'Alias' do
     process = create AliasJob
 
-    process.must_be_initialized
     queue.must_be_empty
 
     process.enqueue
@@ -261,7 +259,6 @@ module LifeCycleExamples
   it 'Custom queue' do
     process = create CustomQueueJob, input: 'hello'
 
-    process.must_be_initialized
     process.must_have_params input: 'hello'
 
     env.queue(:queue_1).must_be_empty
@@ -302,7 +299,6 @@ module LifeCycleExamples
   it 'Exception' do
     process = create ExceptionJob
 
-    process.must_be_initialized
     queue.must_be_empty
 
     process.enqueue
@@ -320,7 +316,6 @@ module LifeCycleExamples
   it 'Inner exception' do
     process = create InnerExceptionJob
 
-    process.must_be_initialized
     queue.must_be_empty
 
     process.enqueue
@@ -348,7 +343,6 @@ module LifeCycleExamples
   it 'Forward reference' do
     process = create ForwardReferenceJob
 
-    process.must_be_initialized
     queue.must_be_empty
 
     process.enqueue
@@ -391,7 +385,6 @@ module LifeCycleExamples
   it 'Job with retries' do
     process = create WithRetriesJob
 
-    process.must_be_initialized
     queue.must_be_empty
 
     process.enqueue
@@ -604,7 +597,7 @@ module LifeCycleExamples
     pid_1 = process_1.id
     pid_2 = process_2.id
 
-    data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 37
+    data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 40
     data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 7
 
     process_1.destroy
@@ -628,8 +621,8 @@ module LifeCycleExamples
     process_1.must_be_completed
     process_2.must_be_waiting
 
-    data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 49
-    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 37
+    data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 61
+    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 40
 
     gc = Asynchronic::GarbageCollector.new env, 0.001
     
@@ -651,13 +644,12 @@ module LifeCycleExamples
     gc.start
 
     data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 0
-    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 37
+    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 40
   end
 
   it 'Before finalize hook when completed' do
     process = create BeforeFinalizeCompletedJob
 
-    process.must_be_initialized
     queue.must_be_empty
 
     process.enqueue
@@ -675,7 +667,6 @@ module LifeCycleExamples
   it 'Before finalize hook when aborted' do
     process = create BeforeFinalizeAbortedJob
 
-    process.must_be_initialized
     queue.must_be_empty
 
     process.enqueue
@@ -693,7 +684,6 @@ module LifeCycleExamples
   it 'Before finalize raises exception and aborts' do
     process = create BeforeFinalizeRaisesExceptionJob
 
-    process.must_be_initialized
     queue.must_be_empty
 
     process.enqueue
@@ -711,7 +701,6 @@ module LifeCycleExamples
   it 'Before finalize raises exception on aborted job' do
     process = create BeforeFinalizeExceptionOnAbortedJob
 
-    process.must_be_initialized
     queue.must_be_empty
 
     process.enqueue

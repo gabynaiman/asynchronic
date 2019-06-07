@@ -75,6 +75,12 @@ module MiniTest::Assertions
     process.finalized_at.must_be_instance_of Time
   end
 
+  def assert_have_worker_info(process)
+    process.worker_pid.must_equal ::Process.pid
+    process.worker_server_name.must_equal Socket.gethostname
+    process.worker_server_ip.must_equal Socket.ip_address_list.select { |ip| ip.ipv4_private? }.map(&:ip_address).first
+  end
+
 end
 
 Asynchronic::QueueEngine::InMemory::Queue.infect_an_assertion :assert_enqueued, :must_enqueued
@@ -86,3 +92,4 @@ Asynchronic::Process.infect_an_assertion :assert_be_queued, :must_be_queued, :un
 Asynchronic::Process.infect_an_assertion :assert_be_waiting, :must_be_waiting, :unary
 Asynchronic::Process.infect_an_assertion :assert_be_completed, :must_be_completed, :unary
 Asynchronic::Process.infect_an_assertion :assert_be_aborted, :must_be_aborted, :unary
+Asynchronic::Process.infect_an_assertion :assert_have_worker_info, :must_have_worker_info, :unary

@@ -11,7 +11,7 @@ module Asynchronic
       aborted:   :finalized_at
     }
 
-    ATTRIBUTE_NAMES = [:type, :name, :queue, :status, :dependencies, :data, :result, :error] | TIME_TRACKING_MAP.values.uniq
+    ATTRIBUTE_NAMES = [:type, :name, :queue, :status, :dependencies, :data, :result, :error, :worker_pid, :worker_server_name, :worker_server_ip] | TIME_TRACKING_MAP.values.uniq
 
     CANCELED_ERROR_MESSAGE = 'Canceled'
 
@@ -75,7 +75,7 @@ module Asynchronic
 
     def processes
       data_store.scoped(:processes).keys.
-        select { |k| k.sections.count == 2 && k.match(/name$/) }.
+        select { |k| k.sections.count == 2 && k.match(/\|name$/) }.
         sort.map { |k| Process.new environment, id[:processes][k.remove_last] }
     end
 
@@ -208,6 +208,8 @@ module Asynchronic
     end
 
     def run
+      set_worker_info
+
       if root.aborted?
         abort!
       else
@@ -215,6 +217,7 @@ module Asynchronic
         self.result = job.call
         waiting!
       end
+    
     rescue Exception => ex
       message = "Failed process #{type} (#{id})\n#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
       Asynchronic.logger.error('Asynchronic') { message }
@@ -247,6 +250,12 @@ module Asynchronic
 
     def parent_queue
       parent.queue if parent
+    end
+
+    def set_worker_info
+      self.worker_pid = ::Process.pid
+      self.worker_server_name = Socket.gethostname
+      self.worker_server_ip = Socket.ip_address_list.select { |ip| ip.ipv4_private? }.map(&:ip_address).first
     end
 
   end
