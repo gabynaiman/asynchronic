@@ -38,7 +38,7 @@ module Asynchronic
       private
 
       def redis
-        @redis ||= Redis.connect(::Ost.options)
+        @redis ||= Redis.connect ::Ost.options
       end
 
 
@@ -68,7 +68,7 @@ module Asynchronic
         def listen(queue, &block)
           @current_queue = queue
           Asynchronic.retry_execution(self.class, 'listen') do
-            queue.each &block
+            queue.each(&block)
           end
         end
 
