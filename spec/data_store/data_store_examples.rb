@@ -22,19 +22,19 @@ module DataStoreExamples
   end
 
   it 'Delete cascade' do
-    data_store[Key[:key_1]] = 1
-    data_store[Key[:key_1][:key_1_1]] = 2
-    data_store[Key[:key_1][:key_1_2]] = 3
-    data_store[Key[:key_2]] = 4
-    data_store[Key[:key_2][:key_2_1]] = 5
-    data_store[Key[:key_2][:key_2_2]] = 6
+    data_store[Asynchronic::DataStore::Key[:key_1]] = 1
+    data_store[Asynchronic::DataStore::Key[:key_1][:key_1_1]] = 2
+    data_store[Asynchronic::DataStore::Key[:key_1][:key_1_2]] = 3
+    data_store[Asynchronic::DataStore::Key[:key_2]] = 4
+    data_store[Asynchronic::DataStore::Key[:key_2][:key_2_1]] = 5
+    data_store[Asynchronic::DataStore::Key[:key_2][:key_2_2]] = 6
 
-    data_store.delete_cascade Key[:key_1]
+    data_store.delete_cascade Asynchronic::DataStore::Key[:key_1]
 
     data_store.keys.sort.must_equal [
-      Key[:key_2], 
-      Key[:key_2][:key_2_1], 
-      Key[:key_2][:key_2_2]
+      Asynchronic::DataStore::Key[:key_2], 
+      Asynchronic::DataStore::Key[:key_2][:key_2_1], 
+      Asynchronic::DataStore::Key[:key_2][:key_2_2]
     ]
   end
 

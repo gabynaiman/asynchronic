@@ -8,11 +8,11 @@ module Asynchronic
 
       def initialize(scope, *args)
         @scope = Key[scope]
-        @connection = ::Redis.new(*args)
+        @redis = Redic.new(*args)
       end
 
       def [](key)
-        value = @connection.get @scope[key]
+        value = @redis.call 'GET', @scope[key]
         value ? Marshal.load(value) : nil
       rescue => ex
         Asynchronic.logger.warn('Asynchronic') { ex.message }
@@ -20,33 +20,33 @@ module Asynchronic
       end
 
       def []=(key, value)
-        @connection.set @scope[key], Marshal.dump(value)
+        @redis.call 'SET', @scope[key], Marshal.dump(value)
       end
 
       def delete(key)
-        @connection.del @scope[key]
+        @redis.call 'DEL', @scope[key]
       end
 
       def delete_cascade(key)
-        @connection.del @scope[key]
-        @connection.keys(@scope[key]['*']).each { |k| @connection.del k }
+        @redis.call 'DEL', @scope[key]
+        @redis.call('KEYS', @scope[key]['*']).each { |k| @redis.call 'DEL', k }
       end
 
       def keys
-        @connection.keys(@scope['*']).map { |k| Key[k].remove_first }
+        @redis.call('KEYS', @scope['*']).map { |k| Key[k].remove_first }
       end
 
       def synchronize(key)
-        while @connection.getset(@scope[key][LOCKED], LOCKED) == LOCKED
+        while @redis.call('GETSET', @scope[key][LOCKED], LOCKED) == LOCKED
           sleep Asynchronic.redis_data_store_sync_timeout
         end
         yield
       ensure
-        @connection.del @scope[key][LOCKED]
+        @redis.call 'DEL', @scope[key][LOCKED]
       end
 
       def connection_args
-        [@scope, @connection.client.options]
+        [@scope, @redis.url]
       end
 
       def self.connect(*args)

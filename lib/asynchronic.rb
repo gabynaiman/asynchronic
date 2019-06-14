@@ -1,11 +1,12 @@
 require 'forwardable'
 require 'securerandom'
-require 'redis'
 require 'ost'
+require 'redic'
 require 'class_config'
 require 'transparent_proxy'
 require 'logger'
 require 'multi_require'
+require 'timeout'
 require 'socket'
 
 MultiRequire.require_relative_pattern 'asynchronic/**/*.rb'
@@ -21,6 +22,8 @@ module Asynchronic
   attr_config :retry_timeout, 30
   attr_config :garbage_collector_timeout, 30
   attr_config :redis_data_store_sync_timeout, 0.01
+  attr_config :keep_alive_timeout, 0.1
+  attr_config :connection_name, "HOST=#{Socket.gethostname},PID=#{::Process.pid}"
 
   def self.environment
     Environment.new queue_engine, data_store

@@ -18,7 +18,7 @@ module LifeCycleExamples
   def execute(queue)
     process = env.load_process(queue.pop)
     process.execute
-    process.must_have_worker_info
+    process.must_have_connection_name
   end
 
   it 'Basic' do
@@ -597,7 +597,7 @@ module LifeCycleExamples
     pid_1 = process_1.id
     pid_2 = process_2.id
 
-    data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 40
+    data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 38
     data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 7
 
     process_1.destroy
@@ -621,8 +621,8 @@ module LifeCycleExamples
     process_1.must_be_completed
     process_2.must_be_waiting
 
-    data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 61
-    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 40
+    data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 53
+    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 38
 
     gc = Asynchronic::GarbageCollector.new env, 0.001
     
@@ -644,7 +644,7 @@ module LifeCycleExamples
     gc.start
 
     data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 0
-    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 40
+    data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 38
   end
 
   it 'Before finalize hook when completed' do

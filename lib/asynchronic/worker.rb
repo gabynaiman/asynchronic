@@ -23,7 +23,7 @@ class Asynchronic::Worker
   end
 
   def stop
-    Asynchronic.logger.info('Asynchronic') { "Stopping worker of #{@queue_name} (#{Process.pid})" }
+    Asynchronic.logger.info('Asynchronic') { "Stopping worker of #{queue_name} (#{Process.pid})" }
     listener.stop
   end
 

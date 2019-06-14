@@ -31,17 +31,19 @@ module QueueEngineExamples
   end
 
   it 'Listener' do
-    queue.push 'msg_1'
-    queue.push 'msg_2'
+    Timeout.timeout(5) do
+      queue.push 'msg_1'
+      queue.push 'msg_2'
 
-    messages = []
+      messages = []
 
-    listener.listen(queue) do |msg|
-      messages << msg
-      listener.stop if queue.empty?
+      listener.listen(queue) do |msg|
+        messages << msg
+        listener.stop if queue.empty?
+      end
+
+      messages.must_equal %w(msg_1 msg_2)
     end
-
-    messages.must_equal %w(msg_1 msg_2)
   end
 
 end

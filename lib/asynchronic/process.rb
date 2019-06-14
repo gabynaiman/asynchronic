@@ -11,7 +11,7 @@ module Asynchronic
       aborted:   :finalized_at
     }
 
-    ATTRIBUTE_NAMES = [:type, :name, :queue, :status, :dependencies, :data, :result, :error, :worker_pid, :worker_server_name, :worker_server_ip] | TIME_TRACKING_MAP.values.uniq
+    ATTRIBUTE_NAMES = [:type, :name, :queue, :status, :dependencies, :data, :result, :error, :connection_name] | TIME_TRACKING_MAP.values.uniq
 
     CANCELED_ERROR_MESSAGE = 'Canceled'
 
@@ -45,6 +45,14 @@ module Asynchronic
 
     def cancel!
       abort! CANCELED_ERROR_MESSAGE
+    end
+
+    def dead?
+      (running? && !connected?) || processes.any?(&:dead?)
+    end
+
+    def connected?
+      connection_name && environment.queue_engine.active_connections.include?(connection_name)
     end
 
     def destroy
@@ -208,7 +216,7 @@ module Asynchronic
     end
 
     def run
-      set_worker_info
+      self.connection_name = Asynchronic.connection_name
 
       if root.aborted?
         abort!
@@ -250,12 +258,6 @@ module Asynchronic
 
     def parent_queue
       parent.queue if parent
-    end
-
-    def set_worker_info
-      self.worker_pid = ::Process.pid
-      self.worker_server_name = Socket.gethostname
-      self.worker_server_ip = Socket.ip_address_list.select { |ip| ip.ipv4_private? }.map(&:ip_address).first
     end
 
   end

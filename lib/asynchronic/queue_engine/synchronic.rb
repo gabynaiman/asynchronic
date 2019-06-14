@@ -29,6 +29,11 @@ module Asynchronic
         false
       end
 
+      def active_connections
+        [Asynchronic.connection_name]
+      end
+
+
       class Queue
 
         def initialize(engine)

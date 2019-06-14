@@ -18,8 +18,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'redis', '~> 3.0'
-  spec.add_dependency 'ost', '~> 0.1'
+  spec.add_dependency 'ost', '~> 1.0'
   spec.add_dependency 'class_config', '~> 0.0'
   spec.add_dependency 'transparent_proxy', '~> 0.0'
   spec.add_dependency 'multi_require', '~> 1.0'

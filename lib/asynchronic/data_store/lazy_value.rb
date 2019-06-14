@@ -18,7 +18,7 @@ module Asynchronic
       end
 
       def data_store
-        @data_store_class.connect *@data_store_connection_args
+        @data_store_class.connect(*@data_store_connection_args)
       end
 
       def to_value

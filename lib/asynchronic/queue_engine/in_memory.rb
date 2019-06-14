@@ -33,6 +33,11 @@ module Asynchronic
         true
       end
 
+      def active_connections
+        [Asynchronic.connection_name]
+      end
+
+
       class Queue
 
         extend Forwardable

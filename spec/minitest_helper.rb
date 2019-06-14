@@ -5,6 +5,7 @@ require 'minitest/colorin'
 require 'minitest/great_expectations'
 require 'jobs'
 require 'expectations'
+require 'timeout'
 require 'pry-nav'
 
 class Module

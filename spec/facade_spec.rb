@@ -64,4 +64,16 @@ describe Asynchronic, 'Facade' do
     Asynchronic.garbage_collector.must_be_instance_of Asynchronic::GarbageCollector
   end
 
+  it 'Redis data store sync timeout' do
+    Asynchronic.redis_data_store_sync_timeout.must_equal 0.01
+  end
+
+  it 'Keep alive timeout' do
+    Asynchronic.keep_alive_timeout.must_equal 0.1
+  end
+
+  it 'Connection name' do
+    Asynchronic.connection_name.must_equal "HOST=#{Socket.gethostname},PID=#{::Process.pid}"
+  end
+
 end
