@@ -51,10 +51,6 @@ module Asynchronic
       (running? && !connected?) || processes.any?(&:dead?)
     end
 
-    def connected?
-      connection_name && environment.queue_engine.active_connections.include?(connection_name)
-    end
-
     def destroy
       data_store.delete_cascade
     end
@@ -258,6 +254,10 @@ module Asynchronic
 
     def parent_queue
       parent.queue if parent
+    end
+
+    def connected?
+      connection_name && environment.queue_engine.active_connections.include?(connection_name)
     end
 
   end
