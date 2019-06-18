@@ -34,5 +34,9 @@ describe Asynchronic::QueueEngine::Synchronic do
     process.must_be_completed
     process.result.must_equal '10%' => 20, '20%' => 40
   end
-  
+
+  it 'Active connections' do
+    Asynchronic.queue_engine.active_connections.must_equal [Asynchronic.connection_name]
+  end
+
 end

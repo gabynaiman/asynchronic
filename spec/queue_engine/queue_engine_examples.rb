@@ -46,4 +46,8 @@ module QueueEngineExamples
     end
   end
 
+  it 'Active connections' do
+    engine.active_connections.must_equal [Asynchronic.connection_name]
+  end
+
 end

@@ -19,6 +19,8 @@ module LifeCycleExamples
     process = env.load_process(queue.pop)
     process.execute
     process.must_have_connection_name
+    process.wont_be :dead?
+    process.send(:connected?).must_be_true
   end
 
   it 'Basic' do
