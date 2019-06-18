@@ -1,3 +1,3 @@
 module Asynchronic
-  VERSION = '1.6.3'
+  VERSION = '2.0.0'
 end
