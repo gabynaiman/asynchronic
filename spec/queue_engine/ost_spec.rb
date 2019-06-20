@@ -11,5 +11,9 @@ describe Asynchronic::QueueEngine::Ost do
   end
   
   include QueueEngineExamples
+
+  it 'Engine and queues use same redis connection' do
+    engine.redis.must_equal queue.redis
+  end
   
 end

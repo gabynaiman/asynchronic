@@ -2,12 +2,12 @@ module Asynchronic
   module QueueEngine
     class Ost
 
-      attr_reader :default_queue
+      attr_reader :redis, :default_queue
 
       def initialize(options={})
         @redis = Redic.new(*Array(options[:redis]))
         @default_queue = options.fetch(:default_queue, Asynchronic.default_queue)
-        @queues ||= Hash.new { |h,k| h[k] = Queue.new k }
+        @queues ||= Hash.new { |h,k| h[k] = Queue.new k, redis }
         @keep_alive_thread = notify_keep_alive
       end
 
@@ -16,12 +16,12 @@ module Asynchronic
       end
 
       def queues
-        (@queues.values.map(&:key) | @redis.call('KEYS', 'ost:*')).map { |q| q.to_s[4..-1].to_sym }
+        (@queues.values.map(&:key) | redis.call('KEYS', 'ost:*')).map { |q| q.to_s[4..-1].to_sym }
       end
 
       def clear
         @queues.clear
-        @redis.call('KEYS', 'ost:*').each { |k| @redis.call('DEL', k) }
+        redis.call('KEYS', 'ost:*').each { |k| redis.call('DEL', k) }
       end
 
       def listener
@@ -33,7 +33,7 @@ module Asynchronic
       end
 
       def active_connections
-        @redis.call('CLIENT', 'LIST').split("\n").map do |connection_info|
+        redis.call('CLIENT', 'LIST').split("\n").map do |connection_info|
           connection_info.split(' ').detect { |a| a.match(/name=/) }[5..-1]
         end.uniq.reject(&:empty?)
       end
@@ -43,7 +43,7 @@ module Asynchronic
       def notify_keep_alive
         Thread.new do
           loop do
-            @redis.call 'CLIENT', 'SETNAME', Asynchronic.connection_name
+            redis.call 'CLIENT', 'SETNAME', Asynchronic.connection_name
             sleep Asynchronic.keep_alive_timeout
           end
         end
@@ -51,6 +51,11 @@ module Asynchronic
 
 
       class Queue < ::Ost::Queue
+
+        def initialize(name, redis)
+          super name
+          self.redis = redis
+        end
 
         def pop
           redis.call 'RPOP', key
