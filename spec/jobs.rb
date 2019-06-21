@@ -326,7 +326,7 @@ class NestedJobWithErrorInChildJob < Asynchronic::Job
 end
 
 
-class AbortQueuedAfertErrorJob < Asynchronic::Job
+class AbortQueuedAfterErrorJob < Asynchronic::Job
   def call
     async Child_1
     async Child_2
