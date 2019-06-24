@@ -14,6 +14,7 @@ module Asynchronic
     ATTRIBUTE_NAMES = [:type, :name, :queue, :status, :dependencies, :data, :result, :error, :connection_name] | TIME_TRACKING_MAP.values.uniq
 
     CANCELED_ERROR_MESSAGE = 'Canceled'
+    DEAD_ERROR_MESSAGE = 'Process connection broken'
 
     attr_reader :id
 
@@ -49,6 +50,10 @@ module Asynchronic
 
     def dead?
       (running? && !connected?) || processes.any?(&:dead?)
+    end
+
+    def abort_if_dead
+      abort! DEAD_ERROR_MESSAGE if dead?
     end
 
     def destroy
@@ -190,8 +195,12 @@ module Asynchronic
 
     def status=(status)
       Asynchronic.logger.info('Asynchronic') { "#{status.to_s.capitalize} #{type} (#{id})" }
+      
       data_store[:status] = status
       data_store[TIME_TRACKING_MAP[status]] = Time.now if TIME_TRACKING_MAP.key? status
+      
+      environment.notifier.publish id, :status_changed, status
+      environment.notifier.publish id, :finalized if finalized?
     end
 
     STATUSES.each do |status|

@@ -7,6 +7,7 @@ module LifeCycleExamples
   after do
     data_store.clear
     queue_engine.clear
+    notifier.unsubscribe_all
   end
 
   def create(type, params={})
@@ -17,10 +18,41 @@ module LifeCycleExamples
 
   def execute(queue)
     process = env.load_process(queue.pop)
+
+    events = []
+    status_changed_id = notifier.subscribe(process.id, :status_changed) { |status| events << status }
+
+    is_finalized = false
+    finalized_id = notifier.subscribe(process.id, :finalized) { is_finalized = true }
+
     process.execute
+
     process.must_have_connection_name
     process.wont_be :dead?
     process.send(:connected?).must_be_true
+
+    with_retries do
+      events.last.must_equal process.status
+      process.finalized?.must_equal is_finalized
+    end
+
+    notifier.unsubscribe status_changed_id
+    notifier.unsubscribe finalized_id
+
+    status = process.status
+    process.abort_if_dead
+    process.status.must_equal status
+  end
+
+  def with_retries(&block)
+    Timeout.timeout(3) do
+      begin
+        block.call
+      rescue Minitest::Assertion
+        sleep 0.001
+        retry
+      end
+    end
   end
 
   it 'Basic' do
@@ -617,36 +649,44 @@ module LifeCycleExamples
     process_2.enqueue
     execute queue
 
+    process_3 = create BasicJob
+
     pid_1 = process_1.id
     pid_2 = process_2.id
+    pid_3 = process_3.id
 
     process_1.must_be_completed
     process_2.must_be_waiting
+    process_3.must_be_pending
 
     data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 53
     data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 38
+    data_store.keys.select { |k| k.start_with? pid_3 }.count.must_equal 7
 
     gc = Asynchronic::GarbageCollector.new env, 0.001
     
-    gc.add_condition('Completed', &:completed?)
+    gc.add_condition('Finalized', &:finalized?)
     gc.add_condition('Waiting', &:waiting?)
     gc.add_condition('Exception') { raise 'Invalid condition' }
 
-    gc.conditions_names.must_equal ['Completed', 'Waiting', 'Exception']
+    gc.conditions_names.must_equal ['Finalized', 'Waiting', 'Exception']
 
     gc.remove_condition 'Waiting'
     
-    gc.conditions_names.must_equal ['Completed', 'Exception']
+    gc.conditions_names.must_equal ['Finalized', 'Exception']
 
     Thread.new do
       sleep 0.01
       gc.stop
     end
 
-    gc.start
+    Asynchronic::Process.stub_any_instance(:dead?, -> { id == pid_3 }) do
+      gc.start
+    end
 
     data_store.keys.select { |k| k.start_with? pid_1 }.count.must_equal 0
     data_store.keys.select { |k| k.start_with? pid_2 }.count.must_equal 38
+    data_store.keys.select { |k| k.start_with? pid_3 }.count.must_equal 0
   end
 
   it 'Before finalize hook when completed' do

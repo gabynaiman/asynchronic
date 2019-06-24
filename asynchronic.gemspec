@@ -19,6 +19,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'ost', '~> 1.0'
+  spec.add_dependency 'broadcaster', '~> 1.0'
   spec.add_dependency 'class_config', '~> 0.0'
   spec.add_dependency 'transparent_proxy', '~> 0.0'
   spec.add_dependency 'multi_require', '~> 1.0'
@@ -27,6 +28,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake', '~> 11.0'
   spec.add_development_dependency 'minitest', '~> 5.0', '< 5.11'
   spec.add_development_dependency 'minitest-great_expectations', '~> 0.0'
+  spec.add_development_dependency 'minitest-stub_any_instance', '~> 1.0'
   spec.add_development_dependency 'minitest-colorin', '~> 0.1'
   spec.add_development_dependency 'minitest-line', '~> 0.6'
   spec.add_development_dependency 'simplecov', '~> 0.12'

@@ -18,6 +18,8 @@ module Asynchronic
       while @running
         processes = environment.processes
 
+        processes.each(&:abort_if_dead)
+
         conditions.each do |name, condition|
           Asynchronic.logger.info('Asynchronic') { "Running GC - #{name}" }
           begin

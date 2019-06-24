@@ -1,12 +1,12 @@
 module Asynchronic
   class Environment
 
-    attr_reader :queue_engine
-    attr_reader :data_store
+    attr_reader :queue_engine, :data_store, :notifier
     
-    def initialize(queue_engine, data_store)
+    def initialize(queue_engine, data_store, notifier)
       @queue_engine = queue_engine
       @data_store = data_store
+      @notifier = notifier
     end
 
     def queue(name)
