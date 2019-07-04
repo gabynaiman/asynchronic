@@ -69,7 +69,7 @@ describe Asynchronic, 'Facade' do
   end
 
   it 'Keep alive timeout' do
-    Asynchronic.keep_alive_timeout.must_equal 0.1
+    Asynchronic.keep_alive_timeout.must_equal 1
   end
 
   it 'Connection name' do
