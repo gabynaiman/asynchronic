@@ -200,7 +200,7 @@ end
 class WithRetriesJob < Asynchronic::Job
   def call
     @counter = 0
-    retry_when [RuntimeError] do
+    retry_when [RuntimeError], 0.1 do
       @counter += 1
       raise 'Counter < 3' if @counter < 3
       @counter
