@@ -34,8 +34,9 @@ module Asynchronic
 
       def active_connections
         redis.call('CLIENT', 'LIST').split("\n").map do |connection_info|
-          connection_info.split(' ').detect { |a| a.match(/name=/) }[5..-1]
-        end.uniq.reject(&:empty?)
+          name_attr = connection_info.split(' ').detect { |a| a.match(/name=/) }
+          name_attr ? name_attr[5..-1] : nil
+        end.uniq.compact.reject(&:empty?)
       end
 
       private
