@@ -16,12 +16,12 @@ module Asynchronic
       end
 
       def queues
-        (@queues.values.map(&:key) | redis.call('KEYS', 'ost:*')).map { |q| q.to_s[4..-1].to_sym }
+        (@queues.values.map(&:key) | redis.call!('KEYS', 'ost:*')).map { |q| q.to_s[4..-1].to_sym }
       end
 
       def clear
         @queues.clear
-        redis.call('KEYS', 'ost:*').each { |k| redis.call('DEL', k) }
+        redis.call!('KEYS', 'ost:*').each { |k| redis.call!('DEL', k) }
       end
 
       def listener
@@ -33,7 +33,7 @@ module Asynchronic
       end
 
       def active_connections
-        redis.call('CLIENT', 'LIST').split("\n").map do |connection_info|
+        redis.call!('CLIENT', 'LIST').split("\n").map do |connection_info|
           name_attr = connection_info.split(' ').detect { |a| a.match(/name=/) }
           name_attr ? name_attr[5..-1] : nil
         end.uniq.compact.reject(&:empty?)
@@ -44,7 +44,7 @@ module Asynchronic
       def notify_keep_alive
         Thread.new do
           loop do
-            redis.call 'CLIENT', 'SETNAME', Asynchronic.connection_name
+            redis.call! 'CLIENT', 'SETNAME', Asynchronic.connection_name
             sleep Asynchronic.keep_alive_timeout
           end
         end
@@ -59,11 +59,11 @@ module Asynchronic
         end
 
         def pop
-          redis.call 'RPOP', key
+          redis.call! 'RPOP', key
         end
 
         def empty?
-          redis.call('EXISTS', key) == 0
+          redis.call!('EXISTS', key) == 0
         end
 
         def size
