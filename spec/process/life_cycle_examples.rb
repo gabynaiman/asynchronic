@@ -29,7 +29,12 @@ module LifeCycleExamples
 
     process.must_have_connection_name
     process.wont_be :dead?
+    
     process.send(:connected?).must_be_true
+
+    env.queue_engine.stub(:active_connections, ->() { raise 'Forced error' }) do
+      process.send(:connected?).must_be_true
+    end
 
     with_retries do
       events.last.must_equal process.status

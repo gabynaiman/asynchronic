@@ -267,6 +267,9 @@ module Asynchronic
 
     def connected?
       connection_name && environment.queue_engine.active_connections.include?(connection_name)
+    rescue => ex
+      Asynchronic.logger.error('Asynchronic') { "#{ex.message}\n#{ex.backtrace.join("\n")}" }
+      true
     end
 
   end
