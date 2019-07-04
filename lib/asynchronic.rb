@@ -25,7 +25,7 @@ module Asynchronic
   attr_config :garbage_collector_timeout, 30
   attr_config :redis_data_store_sync_timeout, 0.01
   attr_config :keep_alive_timeout, 0.1
-  attr_config :connection_name, "HOST=#{Socket.gethostname},PID=#{::Process.pid}"
+  attr_config :connection_name, "HOST=#{Socket.gethostname},PID=#{::Process.pid},UUID=#{SecureRandom.uuid}"
 
   def self.environment
     Environment.new queue_engine, data_store, notifier

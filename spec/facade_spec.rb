@@ -73,7 +73,7 @@ describe Asynchronic, 'Facade' do
   end
 
   it 'Connection name' do
-    Asynchronic.connection_name.must_equal "HOST=#{Socket.gethostname},PID=#{::Process.pid}"
+    Asynchronic.connection_name.must_match /^HOST=#{Socket.gethostname},PID=#{::Process.pid}/
   end
 
 end
