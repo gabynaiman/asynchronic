@@ -13,6 +13,7 @@ module Asynchronic
 
     ATTRIBUTE_NAMES = [:type, :name, :queue, :status, :dependencies, :data, :result, :error, :connection_name] | TIME_TRACKING_MAP.values.uniq
 
+    AUTOMATIC_ABORTED_ERROR_MESSAGE = 'Automatic aborted before execution'
     CANCELED_ERROR_MESSAGE = 'Canceled'
     DEAD_ERROR_MESSAGE = 'Process connection broken'
 
@@ -97,13 +98,11 @@ module Asynchronic
     end
 
     def real_error
-      return nil unless error
+      return nil if !aborted?
 
-      processes.each do |child|
-        return child.real_error if child.error
-      end
+      first_aborted_child = processes.select(&:aborted?).sort_by(&:finalized_at).first
 
-      error.message
+      first_aborted_child ? first_aborted_child.real_error : error.message
     end
 
     def dependencies
@@ -215,8 +214,8 @@ module Asynchronic
       end
     end
 
-    def abort!(exception=nil)
-      self.error = Error.new exception if exception
+    def abort!(exception)
+      self.error = Error.new exception
       aborted!
     end
 
@@ -224,7 +223,7 @@ module Asynchronic
       self.connection_name = Asynchronic.connection_name
 
       if root.aborted?
-        abort!
+        abort! AUTOMATIC_ABORTED_ERROR_MESSAGE
       else
         running!
         self.result = job.call

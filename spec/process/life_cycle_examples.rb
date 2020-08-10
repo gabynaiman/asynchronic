@@ -592,6 +592,7 @@ module LifeCycleExamples
                                    'AbortQueuedAfterErrorJob::Child_4' => :aborted
 
     process.real_error.must_equal 'Forced error'
+    process.processes[0].processes[1].error.message.must_equal Asynchronic::Process::AUTOMATIC_ABORTED_ERROR_MESSAGE
   end
 
   it 'Manual abort' do
@@ -761,6 +762,5 @@ module LifeCycleExamples
     process.real_error.must_equal 'Job error'
     queue.must_be_empty
   end
-
 
 end
