@@ -116,18 +116,20 @@ module DataStoreExamples
 
   it 'Synchronization' do
     sum = 0
-    threads = 1.upto(100).map do |i|
+
+    threads = 10.times.map do
       Thread.new do
-        data_store.synchronize('xxx') do
+        data_store.synchronize('lock_key') do
           temp = sum
-          sleep 0
+          sleep 0.01
           sum = temp + 1
         end
       end
     end
+
     threads.each(&:join)
 
-    sum.must_equal 100
+    sum.must_equal threads.count
   end
 
 end
