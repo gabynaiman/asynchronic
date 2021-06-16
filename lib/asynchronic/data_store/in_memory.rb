@@ -4,6 +4,14 @@ module Asynchronic
 
       include Helper
 
+      def self.connect(object_id)
+        connections[object_id]
+      end
+
+      def self.connections
+        @connections ||= {}
+      end
+
       def initialize(hash={})
         @hash = {}
         @mutex = Mutex.new
@@ -38,16 +46,6 @@ module Asynchronic
 
       def connection_args
         [object_id]
-      end
-
-      def self.connect(object_id)
-        connections[object_id]
-      end
-
-      private
-
-      def self.connections
-        @connections ||= {}
       end
 
     end

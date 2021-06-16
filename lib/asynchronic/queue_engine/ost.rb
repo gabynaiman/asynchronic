@@ -5,7 +5,7 @@ module Asynchronic
       attr_reader :redis, :default_queue
 
       def initialize(options={})
-        @redis = Redic.new(*Array(options[:redis]))
+        @redis = Asynchronic.establish_redis_connection options
         @default_queue = options.fetch(:default_queue, Asynchronic.default_queue)
         @queues ||= Hash.new { |h,k| h[k] = Queue.new k, redis }
         @keep_alive_thread = notify_keep_alive
