@@ -1,4 +1,6 @@
 module LifeCycleExamples
+
+  extend Minitest::Spec::DSL
   
   let(:env) { Asynchronic::Environment.new queue_engine, data_store, notifier }
 

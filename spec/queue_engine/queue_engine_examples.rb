@@ -1,4 +1,6 @@
 module QueueEngineExamples
+
+  extend Minitest::Spec::DSL
   
   let(:queue) { engine[:test_queue] }
 

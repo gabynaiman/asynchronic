@@ -1,5 +1,7 @@
 module WorkerExamples
 
+  extend Minitest::Spec::DSL
+
   let(:env) { Asynchronic::Environment.new queue_engine, data_store, notifier }
   let(:queue_name) { :test_worker }
   let(:queue) { env.queue queue_name }

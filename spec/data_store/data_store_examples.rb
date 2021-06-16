@@ -1,4 +1,6 @@
 module DataStoreExamples
+
+  extend Minitest::Spec::DSL
   
   it 'Get/Set value' do
     data_store[:key] = 123

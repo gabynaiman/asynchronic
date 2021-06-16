@@ -9,10 +9,6 @@ require 'expectations'
 require 'timeout'
 require 'pry-nav'
 
-class Module
-  include Minitest::Spec::DSL
-end
-
 Asynchronic.logger.level = Logger::FATAL
 
 class Minitest::Spec

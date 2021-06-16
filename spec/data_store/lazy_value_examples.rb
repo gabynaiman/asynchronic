@@ -1,5 +1,7 @@
 module LazyValueExamples
 
+  extend Minitest::Spec::DSL
+
   def lazy_value(key)
     Asynchronic::DataStore::LazyValue.new data_store, key
   end
