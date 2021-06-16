@@ -1,28 +1,32 @@
 module QueueEngineExamples
 
   extend Minitest::Spec::DSL
-  
+
   let(:queue) { engine[:test_queue] }
 
+  after do
+    engine.clear
+  end
+
   it 'Engine' do
-    engine.queues.must_be_empty
-    
+    engine.queue_names.must_be_empty
+
     queue = engine[:test_engine]
     queue.must_be_instance_of engine.class.const_get(:Queue)
-    engine.queues.must_equal [:test_engine]
-    
+    engine.queue_names.must_equal [:test_engine]
+
     engine[:test_engine].must_equal queue
-    
+
     engine.clear
-    engine.queues.must_be_empty
+    engine.queue_names.must_be_empty
   end
 
   it 'Queue (push/pop)' do
     queue.must_be_empty
-    
+
     queue.push 'msg_1'
     queue.push 'msg_2'
-    
+
     queue.size.must_equal 2
     queue.to_a.must_equal %w(msg_1 msg_2)
 

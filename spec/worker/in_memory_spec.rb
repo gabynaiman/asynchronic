@@ -1,5 +1,4 @@
 require 'minitest_helper'
-require_relative './worker_examples'
 
 describe Asynchronic::Worker, 'InMemory' do
 
@@ -8,5 +7,5 @@ describe Asynchronic::Worker, 'InMemory' do
   let(:notifier) { Asynchronic::Notifier::InMemory.new }
 
   include WorkerExamples
-  
+
 end

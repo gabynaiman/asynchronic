@@ -1,5 +1,4 @@
 require 'minitest_helper'
-require_relative './life_cycle_examples.rb'
 
 describe Asynchronic::Process, 'Life cycle - Redis' do
 

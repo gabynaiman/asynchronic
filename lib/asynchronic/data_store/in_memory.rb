@@ -12,7 +12,7 @@ module Asynchronic
         @connections ||= {}
       end
 
-      def initialize(hash={})
+      def initialize
         @hash = {}
         @mutex = Mutex.new
         @keys_mutex = Hash.new { |h,k| h[k] = Mutex.new }
@@ -20,33 +20,37 @@ module Asynchronic
       end
 
       def [](key)
-        Marshal.load(@hash[key.to_s]) if @hash.key? key.to_s
+        Marshal.load(hash[key.to_s]) if hash.key? key.to_s
       end
 
       def []=(key, value)
-        @mutex.synchronize { @hash[key.to_s] = Marshal.dump(value) }
+        mutex.synchronize { hash[key.to_s] = Marshal.dump(value) }
       end
 
       def delete(key)
-        @hash.delete key.to_s
+        hash.delete key.to_s
       end
 
       def delete_cascade(key)
-        keys = self.keys.select { |k| k.sections.first == key }
-        keys.each { |k| delete k }
+        keys.select { |k| k.sections.first == key }
+            .each { |k| delete k }
       end
 
       def keys
-        @hash.keys.map { |k| Key[k] }
+        hash.keys.map { |k| Key[k] }
       end
 
       def synchronize(key, &block)
-        @keys_mutex[key].synchronize(&block)
+        keys_mutex[key].synchronize(&block)
       end
 
       def connection_args
         [object_id]
       end
+
+      private
+
+      attr_reader :hash, :mutex, :keys_mutex
 
     end
   end

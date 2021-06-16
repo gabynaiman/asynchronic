@@ -1,16 +1,14 @@
 require 'minitest_helper'
-require_relative './data_store_examples'
-require_relative './lazy_value_examples'
 
 describe Asynchronic::DataStore::Redis do
 
   let(:data_store) { Asynchronic::DataStore::Redis.new :asynchronic_test }
 
-  after do
-    data_store.clear
-  end
-
   include DataStoreExamples
+
+  describe 'LazyValue' do
+    include LazyValueExamples
+  end
 
   it 'Safe deserialization' do
     SampleClass = Class.new
@@ -22,10 +20,6 @@ describe Asynchronic::DataStore::Redis do
 
     data_store[:class].must_be_instance_of String
     data_store[:instance].must_be_instance_of String
-  end
-
-  describe 'LazyValue' do
-    include LazyValueExamples
   end
 
 end

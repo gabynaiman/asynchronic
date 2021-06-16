@@ -1,24 +1,21 @@
 class Asynchronic::Worker
 
-  attr_reader :queue
-  attr_reader :queue_name
-  attr_reader :env
-  attr_reader :listener
+  attr_reader :queue, :queue_name, :environment, :listener
 
-  def initialize(queue_name, env)
+  def initialize(queue_name, environment)
     @queue_name = queue_name
-    @queue = env.queue_engine[queue_name]
-    @env = env
-    @listener = env.queue_engine.listener
+    @queue = environment.queue_engine[queue_name]
+    @environment = environment
+    @listener = environment.queue_engine.listener
   end
 
   def start
     Asynchronic.logger.info('Asynchronic') { "Starting worker of #{queue_name} (#{Process.pid})" }
 
     Signal.trap('QUIT') { stop }
-    
+
     listener.listen(queue) do |pid|
-      env.load_process(pid).execute
+      environment.load_process(pid).execute
     end
   end
 

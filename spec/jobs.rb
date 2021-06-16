@@ -9,8 +9,8 @@ class SequentialJob < Asynchronic::Job
 
   def call
     async Step1, input: params[:input]
-    
-    async Step2, dependency: Step1, 
+
+    async Step2, dependency: Step1,
                  input: params[:input]
 
     nil
@@ -32,7 +32,7 @@ end
 
 
 class GraphJob < Asynchronic::Job
-  
+
   def call
     async Sum, input: params[:input]
 
@@ -113,13 +113,13 @@ class AliasJob < Asynchronic::Job
   def call
     async Write, alias: :word_1,
                  text: 'Take'
-    
-    async Write, alias: :word_2, 
-                 text: 'it', 
+
+    async Write, alias: :word_2,
+                 text: 'it',
                  prefix: result(:word_1)
-    
-    async Write, alias: :word_3, 
-                 text: 'easy', 
+
+    async Write, alias: :word_3,
+                 text: 'easy',
                  prefix: result(:word_2)
 
     result :word_3

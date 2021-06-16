@@ -9,25 +9,25 @@ module LazyValueExamples
   it 'Get' do
     value = lazy_value :key
     value.must_be_nil
-    
-    data_store[:key] =  1
+
+    data_store[:key] = 1
     value.must_equal 1
   end
 
   it 'Reload' do
     value = lazy_value :key
 
-    data_store[:key] =  1
+    data_store[:key] = 1
     value.must_equal 1
 
-    data_store[:key] =  2
+    data_store[:key] = 2
     value.must_equal 1
     value.reload.must_equal 2
   end
 
   it 'Transparent proxy' do
     value = lazy_value :key
-    data_store[:key] =  1
+    data_store[:key] = 1
     value.must_equal 1
   end
 

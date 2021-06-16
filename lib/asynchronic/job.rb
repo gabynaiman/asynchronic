@@ -1,18 +1,6 @@
 module Asynchronic
   class Job
 
-    def initialize(process)
-      @process = process
-    end
-
-    def params
-      @process.params
-    end
-
-    def result(reference)
-      @process[reference].result
-    end
-
     def self.queue(name=nil)
       name ? @queue = name : @queue
     end
@@ -21,6 +9,18 @@ module Asynchronic
       process = Asynchronic.environment.create_process self, params
       process.enqueue
       process.id
+    end
+
+    def initialize(process)
+      @process = process
+    end
+
+    def params
+      process.params
+    end
+
+    def result(reference)
+      process[reference].result
     end
 
     private

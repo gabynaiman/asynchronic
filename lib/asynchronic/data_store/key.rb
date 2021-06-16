@@ -1,19 +1,19 @@
 module Asynchronic
   module DataStore
     class Key < String
-    
+
       SEPARATOR = '|'
 
       def self.[](key)
         new key
       end
-      
+
       def initialize(key)
         super key.to_s
       end
 
       def [](key)
-        self.class.new [self,key].join(SEPARATOR)
+        self.class.new [self, key].join(SEPARATOR)
       end
 
       def sections

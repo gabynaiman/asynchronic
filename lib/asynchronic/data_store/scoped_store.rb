@@ -33,9 +33,9 @@ module Asynchronic
       end
 
       def keys
-        @data_store.keys.
-          select { |k| k.start_with? scope[''] }.
-          map { |k| Key[k].remove_first scope.sections.count }
+        data_store.keys
+                  .select { |k| k.start_with? scope[''] }
+                  .map { |k| Key[k].remove_first scope.sections.count }
       end
 
       def synchronize(key, &block)

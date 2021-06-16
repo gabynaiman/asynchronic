@@ -1,7 +1,7 @@
 module LifeCycleExamples
 
   extend Minitest::Spec::DSL
-  
+
   let(:env) { Asynchronic::Environment.new queue_engine, data_store, notifier }
 
   let(:queue) { env.default_queue }
@@ -31,7 +31,7 @@ module LifeCycleExamples
 
     process.must_have_connection_name
     process.wont_be :dead?
-    
+
     process.send(:connected?).must_be_true
 
     env.queue_engine.stub(:active_connections, ->() { raise 'Forced error' }) do
@@ -140,7 +140,7 @@ module LifeCycleExamples
     process[GraphJob::Total].must_be_pending
     process[GraphJob::Total].must_have_params '10%' => nil, '20%' => nil
     queue.must_enqueued process[GraphJob::Sum]
-    
+
     execute queue
 
     process.must_be_waiting
@@ -296,7 +296,7 @@ module LifeCycleExamples
     process[:word_3].result.must_equal 'Take it easy'
     queue.must_be_empty
   end
-  
+
   it 'Custom queue' do
     process = create CustomQueueJob, input: 'hello'
 
@@ -310,7 +310,7 @@ module LifeCycleExamples
 
     process.must_be_queued
     process.processes.must_be_empty
-    
+
     env.queue(:queue_1).must_enqueued process
     env.queue(:queue_2).must_be_empty
     env.queue(:queue_3).must_be_empty
@@ -320,7 +320,7 @@ module LifeCycleExamples
     process.must_be_waiting
     process[CustomQueueJob::Reverse].must_be_queued
     process[CustomQueueJob::Reverse].must_have_params input: 'hello'
-    
+
     env.queue(:queue_1).must_be_empty
     env.queue(:queue_2).must_enqueued process[CustomQueueJob::Reverse]
     env.queue(:queue_3).must_be_empty
@@ -331,7 +331,7 @@ module LifeCycleExamples
     process.result.must_equal 'olleh'
     process[CustomQueueJob::Reverse].must_be_completed
     process[CustomQueueJob::Reverse].result.must_equal 'olleh'
-    
+
     env.queue(:queue_1).must_be_empty
     env.queue(:queue_2).must_be_empty
     env.queue(:queue_3).must_be_empty
@@ -487,7 +487,7 @@ module LifeCycleExamples
 
   it 'Data' do
     process = create DataJob, input: 1
-  
+
     process.enqueue
     execute queue
 
@@ -499,7 +499,7 @@ module LifeCycleExamples
   it 'Nested job with error in child' do
     process = create NestedJobWithErrorInChildJob
 
-    process.enqueue 
+    process.enqueue
 
     Timeout.timeout(1) do
       until process.status == :aborted
@@ -513,17 +513,17 @@ module LifeCycleExamples
   it 'Nested job with error in parent' do
     process = create NestedJobWithErrorInParentJob
 
-    process.enqueue 
+    process.enqueue
 
     execute queue
- 
+
     process.real_error.must_equal "Error in parent"
   end
 
   it 'Abort queued After error' do
     process = create AbortQueuedAfterErrorJob
 
-    process.enqueue 
+    process.enqueue
 
     execute queue
 
@@ -604,27 +604,27 @@ module LifeCycleExamples
 
     execute queue
 
-    process.full_status.must_equal 'NestedJob'         => :waiting, 
+    process.full_status.must_equal 'NestedJob'         => :waiting,
                                    'NestedJob::Level1' => :queued
 
     execute queue
 
-    process.full_status.must_equal 'NestedJob'                 => :waiting, 
-                                   'NestedJob::Level1'         => :waiting, 
+    process.full_status.must_equal 'NestedJob'                 => :waiting,
+                                   'NestedJob::Level1'         => :waiting,
                                    'NestedJob::Level1::Level2' => :queued
 
     process.cancel!
 
     process.real_error.must_equal Asynchronic::Process::CANCELED_ERROR_MESSAGE
 
-    process.full_status.must_equal 'NestedJob'                 => :aborted, 
-                                   'NestedJob::Level1'         => :waiting, 
+    process.full_status.must_equal 'NestedJob'                 => :aborted,
+                                   'NestedJob::Level1'         => :waiting,
                                    'NestedJob::Level1::Level2' => :queued
 
     execute queue
 
-    process.full_status.must_equal 'NestedJob'                 => :aborted, 
-                                   'NestedJob::Level1'         => :aborted, 
+    process.full_status.must_equal 'NestedJob'                 => :aborted,
+                                   'NestedJob::Level1'         => :aborted,
                                    'NestedJob::Level1::Level2' => :aborted
   end
 
@@ -652,7 +652,7 @@ module LifeCycleExamples
     process_1 = create AliasJob
     process_1.enqueue
     4.times { execute queue }
-    
+
     process_2 = create AliasJob
     process_2.enqueue
     execute queue
@@ -672,7 +672,7 @@ module LifeCycleExamples
     data_store.keys.select { |k| k.start_with? pid_3 }.count.must_equal 7
 
     gc = Asynchronic::GarbageCollector.new env, 0.001
-    
+
     gc.add_condition('Finalized', &:finalized?)
     gc.add_condition('Waiting', &:waiting?)
     gc.add_condition('Exception') { raise 'Invalid condition' }
@@ -680,7 +680,7 @@ module LifeCycleExamples
     gc.conditions_names.must_equal ['Finalized', 'Waiting', 'Exception']
 
     gc.remove_condition 'Waiting'
-    
+
     gc.conditions_names.must_equal ['Finalized', 'Exception']
 
     Thread.new do

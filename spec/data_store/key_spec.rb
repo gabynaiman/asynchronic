@@ -56,5 +56,5 @@ describe Asynchronic::DataStore::Key do
     key.remove_last.must_equal 'foo|bar'
     key.remove_last(2).must_equal 'foo'
   end
-  
+
 end

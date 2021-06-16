@@ -19,6 +19,30 @@ module Asynchronic
 
     attr_reader :id
 
+    def self.create(environment, type, params={})
+      id = params.delete(:id) || SecureRandom.uuid
+
+      Asynchronic.logger.debug('Asynchronic') { "Created process #{type} - #{id} - #{params}" }
+
+      new(environment, id) do
+        self.type = type
+        self.name = (params.delete(:alias) || type).to_s
+        self.queue = params.delete(:queue) || type.queue || parent_queue
+        self.dependencies = Array(params.delete(:dependencies)) | Array(params.delete(:dependency)) | infer_dependencies(params)
+        self.params = params
+        self.data = {}
+        pending!
+      end
+    end
+
+    def self.all(environment)
+      environment.data_store.keys
+                            .select { |k| k.sections.count == 2 && k.match(/created_at$/) }
+                            .sort_by { |k| environment.data_store[k] }
+                            .reverse
+                            .map { |k| Process.new environment, k.remove_last }
+    end
+
     def initialize(environment, id, &block)
       @environment = environment
       @id = DataStore::Key[id]
@@ -84,9 +108,11 @@ module Asynchronic
     end
 
     def processes
-      data_store.scoped(:processes).keys.
-        select { |k| k.sections.count == 2 && k.match(/\|name$/) }.
-        sort.map { |k| Process.new environment, id[:processes][k.remove_last] }
+      data_store.scoped(:processes)
+                .keys
+                .select { |k| k.sections.count == 2 && k.match(/\|name$/) }
+                .sort
+                .map { |k| Process.new environment, id[:processes][k.remove_last] }
     end
 
     def parent
@@ -107,11 +133,11 @@ module Asynchronic
 
     def dependencies
       return [] if parent.nil? || data_store[:dependencies].empty?
-      
+
       parent_processes = parent.processes.each_with_object({}) do |process, hash|
         hash[process.name] = process
       end
-      
+
       data_store[:dependencies].map { |d| parent_processes[d.to_s] }
     end
 
@@ -135,7 +161,7 @@ module Asynchronic
         wakeup_children
       end
       Asynchronic.logger.info('Asynchronic') { "Wakeup finalized #{type} (#{id})" }
-      
+
       parent.wakeup if parent && finalized?
     end
 
@@ -149,29 +175,6 @@ module Asynchronic
 
     def set(key, value)
       self.data = self.data.merge key => value
-    end
-
-    def self.create(environment, type, params={})
-      id = params.delete(:id) || SecureRandom.uuid
-
-      Asynchronic.logger.debug('Asynchronic') { "Created process #{type} - #{id} - #{params}" }
-
-      new(environment, id) do
-        self.type = type
-        self.name = (params.delete(:alias) || type).to_s
-        self.queue = params.delete(:queue) || type.queue || parent_queue
-        self.dependencies = Array(params.delete(:dependencies)) | Array(params.delete(:dependency)) | infer_dependencies(params)
-        self.params = params
-        self.data = {}
-        pending!
-      end
-    end
-
-    def self.all(environment)
-      environment.data_store.keys.
-        select { |k| k.sections.count == 2 && k.match(/created_at$/) }.
-        sort_by { |k| environment.data_store[k] }.reverse.
-        map { |k| Process.new environment, k.remove_last }
     end
 
     private
@@ -194,10 +197,10 @@ module Asynchronic
 
     def status=(status)
       Asynchronic.logger.info('Asynchronic') { "#{status.to_s.capitalize} #{type} (#{id})" }
-      
+
       data_store[:status] = status
       data_store[TIME_TRACKING_MAP[status]] = Time.now if TIME_TRACKING_MAP.key? status
-      
+
       environment.notifier.publish id, :status_changed, status
       environment.notifier.publish id, :finalized if finalized?
     end
@@ -229,7 +232,7 @@ module Asynchronic
         self.result = job.call
         waiting!
       end
-    
+
     rescue Exception => ex
       message = "Failed process #{type} (#{id})\n#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
       Asynchronic.logger.error('Asynchronic') { message }

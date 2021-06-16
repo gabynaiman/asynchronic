@@ -2,27 +2,25 @@ module Asynchronic
   module QueueEngine
     class InMemory
 
-      attr_reader :default_queue
-
       def initialize(options={})
-        @default_queue = options[:default_queue]
+        @options = options
         @queues ||= Hash.new { |h,k| h[k] = Queue.new }
       end
 
       def default_queue
-        @default_queue ||= Asynchronic.default_queue
+        @default_queue ||= options.fetch(:default_queue, Asynchronic.default_queue)
       end
 
       def [](name)
-        @queues[name]
+        queues[name]
       end
 
-      def queues
-        @queues.keys.map(&:to_sym)
+      def queue_names
+        queues.keys.map(&:to_sym)
       end
 
       def clear
-        @queues.clear
+        queues.clear
       end
 
       def listener
@@ -37,12 +35,16 @@ module Asynchronic
         [Asynchronic.connection_name]
       end
 
+      private
+
+      attr_reader :queues, :options
+
 
       class Queue
 
         extend Forwardable
 
-        def_delegators :@queue, :size, :empty?, :to_a
+        def_delegators :queue, :size, :empty?, :to_a
 
         def initialize
           @queue = []
@@ -50,12 +52,16 @@ module Asynchronic
         end
 
         def pop
-          @mutex.synchronize { @queue.shift }
+          mutex.synchronize { queue.shift }
         end
 
         def push(message)
-          @mutex.synchronize { @queue.push message }
+          mutex.synchronize { queue.push message }
         end
+
+        private
+
+        attr_reader :queue, :mutex
 
       end
 

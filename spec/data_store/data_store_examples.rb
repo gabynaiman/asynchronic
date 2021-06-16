@@ -1,7 +1,11 @@
 module DataStoreExamples
 
   extend Minitest::Spec::DSL
-  
+
+  after do
+    data_store.clear
+  end
+
   it 'Get/Set value' do
     data_store[:key] = 123
     data_store[:key].must_equal 123
@@ -34,8 +38,8 @@ module DataStoreExamples
     data_store.delete_cascade Asynchronic::DataStore::Key[:key_1]
 
     data_store.keys.sort.must_equal [
-      Asynchronic::DataStore::Key[:key_2], 
-      Asynchronic::DataStore::Key[:key_2][:key_2_1], 
+      Asynchronic::DataStore::Key[:key_2],
+      Asynchronic::DataStore::Key[:key_2][:key_2_1],
       Asynchronic::DataStore::Key[:key_2][:key_2_2]
     ]
   end
@@ -122,8 +126,8 @@ module DataStoreExamples
       end
     end
     threads.each(&:join)
-      
+
     sum.must_equal 100
   end
-  
+
 end

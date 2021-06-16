@@ -1,5 +1,4 @@
 require 'minitest_helper'
-require_relative './queue_engine_examples'
 
 describe Asynchronic::QueueEngine::InMemory do
 
@@ -7,5 +6,5 @@ describe Asynchronic::QueueEngine::InMemory do
   let(:listener) { Asynchronic::QueueEngine::InMemory::Listener.new }
 
   include QueueEngineExamples
-  
+
 end

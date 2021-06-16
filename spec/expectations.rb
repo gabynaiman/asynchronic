@@ -15,10 +15,10 @@ module MiniTest::Assertions
   def assert_be_initialized(process)
     process.must_be :pending?
     process.wont_be :finalized?
-    
+
     process.processes.must_be_empty
     process.error.must_be_nil
-    
+
     process.created_at.must_be_instance_of Time
     process.queued_at.must_be_nil
     process.started_at.must_be_nil

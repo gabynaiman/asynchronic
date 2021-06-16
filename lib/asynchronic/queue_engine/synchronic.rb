@@ -5,7 +5,7 @@ module Asynchronic
       attr_reader :stubs
 
       def initialize(options={})
-        @environment = options[:environment]
+        @options = options
         @stubs = {}
       end
 
@@ -14,7 +14,7 @@ module Asynchronic
       end
 
       def environment
-        @environment ||= Asynchronic.environment
+        @environment ||= options.fetch(:environment, Asynchronic.environment)
       end
 
       def [](name)
@@ -22,7 +22,7 @@ module Asynchronic
       end
 
       def stub(job, &block)
-        @stubs[job] = block
+        stubs[job] = block
       end
 
       def asynchronic?
@@ -33,6 +33,10 @@ module Asynchronic
         [Asynchronic.connection_name]
       end
 
+      private
+
+      attr_reader :options
+
 
       class Queue
 
@@ -41,11 +45,11 @@ module Asynchronic
         end
 
         def push(message)
-          process = @engine.environment.load_process(message)
+          process = engine.environment.load_process(message)
 
-          if @engine.stubs[process.type]
+          if engine.stubs[process.type]
             job = process.job
-            block = @engine.stubs[process.type]
+            block = engine.stubs[process.type]
             process.define_singleton_method :job do
               MockJob.new job, process, &block
             end
@@ -53,6 +57,10 @@ module Asynchronic
 
           process.execute
         end
+
+        private
+
+        attr_reader :engine
 
       end
 
@@ -66,11 +74,15 @@ module Asynchronic
         end
 
         def call
-          @block.call @process
+          block.call process
         end
 
         def before_finalize
         end
+
+        private
+
+        attr_reader :process, :block
 
       end
 

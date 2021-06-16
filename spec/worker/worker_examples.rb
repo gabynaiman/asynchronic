@@ -29,7 +29,7 @@ module WorkerExamples
 
     Thread.new do
       loop { break if queue.empty? }
-      worker.stop 
+      worker.stop
     end
 
     worker.start
@@ -47,10 +47,10 @@ module WorkerExamples
 
     Asynchronic::Worker.start :test_worker do |worker|
       loop { break if worker.queue.empty? }
-      worker.stop 
+      worker.stop
     end
-    
-    processes.each { |p| p.must_be :completed? }   
+
+    processes.each { |p| p.must_be :completed? }
   end
 
 end

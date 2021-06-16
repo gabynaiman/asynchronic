@@ -6,7 +6,7 @@ describe Asynchronic, 'Facade' do
     Asynchronic.environment.data_store.clear
     Asynchronic.environment.queue_engine.clear
   end
-  
+
   it 'Default queue' do
     Asynchronic.default_queue.must_equal :asynchronic_test
   end
@@ -40,7 +40,7 @@ describe Asynchronic, 'Facade' do
   end
 
   it 'List processes' do
-    ids = 3.times.map do 
+    ids = 3.times.map do
       process = Asynchronic.environment.create_process SequentialJob
       process.id
     end
@@ -51,7 +51,7 @@ describe Asynchronic, 'Facade' do
 
   it 'Enqueue' do
     id = BasicJob.enqueue input: 100
-    
+
     Asynchronic.environment.tap do |env|
       process = env.load_process id
       process.type.must_equal BasicJob

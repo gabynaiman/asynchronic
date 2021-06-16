@@ -22,7 +22,7 @@ describe Asynchronic::QueueEngine::Synchronic do
     Asynchronic.queue_engine.stub BasicJob do |process|
       process.params[:input] + 19
     end
-    
+
     pid = BasicJob.enqueue input: 1
     process = Asynchronic[pid]
     process.result.must_equal 20

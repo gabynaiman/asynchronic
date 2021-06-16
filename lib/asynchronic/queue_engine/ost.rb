@@ -12,15 +12,15 @@ module Asynchronic
       end
 
       def [](name)
-        @queues[name]
+        queues[name]
       end
 
-      def queues
-        (@queues.values.map(&:key) | redis.call!('KEYS', 'ost:*')).map { |q| q.to_s[4..-1].to_sym }
+      def queue_names
+        (queues.values.map(&:key) | redis.call!('KEYS', 'ost:*')).map { |q| q.to_s[4..-1].to_sym }
       end
 
       def clear
-        @queues.clear
+        queues.clear
         redis.call!('KEYS', 'ost:*').each { |k| redis.call!('DEL', k) }
       end
 
@@ -40,6 +40,8 @@ module Asynchronic
       end
 
       private
+
+      attr_reader :queues
 
       def notify_keep_alive
         Thread.new do
