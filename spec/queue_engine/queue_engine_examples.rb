@@ -4,6 +4,8 @@ module QueueEngineExamples
 
   let(:queue) { engine[:test_queue] }
 
+  let(:listener) { engine.listener }
+
   after do
     engine.clear
   end
