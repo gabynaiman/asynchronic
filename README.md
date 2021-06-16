@@ -1,7 +1,7 @@
 # Asynchronic
 
 [![Gem Version](https://badge.fury.io/rb/asynchronic.svg)](https://rubygems.org/gems/asynchronic)
-[![Build Status](https://travis-ci.org/gabynaiman/asynchronic.svg?branch=master)](https://travis-ci.org/gabynaiman/asynchronic)
+[![Build Status](https://travis-ci.com/gabynaiman/asynchronic.svg?branch=master)](https://travis-ci.com/gabynaiman/asynchronic)
 [![Coverage Status](https://coveralls.io/repos/gabynaiman/asynchronic/badge.svg?branch=master)](https://coveralls.io/r/gabynaiman/asynchronic?branch=master)
 [![Code Climate](https://codeclimate.com/github/gabynaiman/asynchronic.svg)](https://codeclimate.com/github/gabynaiman/asynchronic)
 
