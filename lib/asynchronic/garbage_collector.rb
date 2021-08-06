@@ -25,7 +25,8 @@ module Asynchronic
           begin
             processes.select(&condition).each(&:destroy)
           rescue => ex
-            Asynchronic.logger.error('Asynchronic') { "#{ex.class}: #{ex.message}" }
+            error_message = "#{ex.class}: #{ex.message}\n#{ex.backtrace.join("\n")}"
+            Asynchronic.logger.error('Asynchronic') { error_message }
           end
         end
 
