@@ -51,7 +51,7 @@ module Asynchronic
             job = process.job
             block = engine.stubs[process.type]
             process.define_singleton_method :job do
-              MockJob.new job, process, &block
+              MockJob.new job, process, block
             end
           end
 
@@ -67,7 +67,7 @@ module Asynchronic
 
       class MockJob < TransparentProxy
 
-        def initialize(job, process, &block)
+        def initialize(job, process, block)
           super job
           @process = process
           @block = block
