@@ -74,7 +74,7 @@ module Asynchronic
     end
 
     def dead?
-      (running? && !connected?) || processes.any?(&:dead?)
+      (running? && !connected?) || (!finalized? && processes.any?(&:dead?))
     end
 
     def abort_if_dead
